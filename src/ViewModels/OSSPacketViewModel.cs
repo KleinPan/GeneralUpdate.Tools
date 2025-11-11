@@ -56,7 +56,7 @@ public partial class OSSPacketViewModel : ObservableObject
                 Time = CurrnetConfig.Time,
                 Hash = CurrnetConfig.Hash,
                 PacketName = CurrnetConfig.PacketName,
-                Url = CurrnetConfig.Url,
+                Url = CurrnetConfig.Url+"//"+ CurrnetConfig.PacketName+".zip",
                 Version = CurrnetConfig.Version
             });
 
@@ -101,7 +101,7 @@ public partial class OSSPacketViewModel : ObservableObject
 
                 Sha256HashAlgorithm hashAlgorithm = new();
                 CurrnetConfig.Hash = hashAlgorithm.ComputeHash(newZipPath);
-                CurrnetConfig.Url += "//" + CurrnetConfig.PacketName + ".zip";
+                //CurrnetConfig.Url += "//" + CurrnetConfig.PacketName + ".zip";
                 GenerteJsonContent();
                 var versionFilePath = Path.Combine(parentFolder.FullName, "version.json");
 

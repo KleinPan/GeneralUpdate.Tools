@@ -56,7 +56,7 @@
             </Button>
             <Button toolTip:ToolTip.Tip="Build" Classes="Primary" Command="{Binding OSSBuildActionCommand}" Content="Build" />
 
-            <Button toolTip:ToolTip.Tip="Hash" Classes="Primary" Command="{Binding UploadCommand}" Content="Upload" />
+            <Button toolTip:ToolTip.Tip="Upload" Classes="Primary" Command="{Binding UploadCommand}" Content="Upload" />
         </StackPanel>
     </Grid>
 </UserControl>
