@@ -3,9 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using GeneralUpdate.Common.Compress;
 using GeneralUpdate.Differential;
+using GeneralUpdate.Tool.Avalonia.Helpers;
 using GeneralUpdate.Tool.Avalonia.Models;
-
-using Nlnet.Avalonia.Controls;
 
 using System;
 using System.Collections.ObjectModel;
@@ -15,6 +14,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
+using Tmds.DBus.Protocol;
 
 namespace GeneralUpdate.Tool.Avalonia.ViewModels;
 
@@ -66,7 +67,8 @@ public partial class PacketViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.ShowAsync($"Load fail => {ex}", "Fail", Buttons.OK);
+            App.NotifyHelper.ShowErrorMessage($"Load fail => {ex}" );
+           
         }
     }
 
@@ -139,11 +141,13 @@ public partial class PacketViewModel : ObservableObject
             if (packetInfo.Exists)
             {
                 ConfigModel.Path = packetInfo.FullName;
-                await MessageBox.ShowAsync("Build success", "Success", Buttons.OK);
+               
+                App.NotifyHelper.ShowInfoMessage("Build success");
             }
             else
             {
-                await MessageBox.ShowAsync("Build fail", "Fail", Buttons.OK);
+                
+                App.NotifyHelper.ShowErrorMessage("Build fail");
             }
 
             var model = ConfigModel.ToModel();
@@ -156,7 +160,8 @@ public partial class PacketViewModel : ObservableObject
         catch (Exception e)
         {
             Trace.WriteLine(e.Message);
-            await MessageBox.ShowAsync(e.Message, "Fail", Buttons.OK);
+             
+            App.NotifyHelper.ShowErrorMessage(e.Message);
         }
     }
 

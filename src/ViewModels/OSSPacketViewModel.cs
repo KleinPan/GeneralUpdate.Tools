@@ -5,8 +5,6 @@ using GeneralUpdate.Common.Compress;
 using GeneralUpdate.Common.HashAlgorithms;
 using GeneralUpdate.Common.Shared.Object;
 
-using Nlnet.Avalonia.Controls;
-
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -44,7 +42,6 @@ public partial class OSSPacketViewModel : ObservableObject
 
     #region Private Methods
 
-  
     private void GenerteJsonContent()
     {
         try
@@ -56,7 +53,7 @@ public partial class OSSPacketViewModel : ObservableObject
                 Time = CurrnetConfig.Time,
                 Hash = CurrnetConfig.Hash,
                 PacketName = CurrnetConfig.PacketName,
-                Url = CurrnetConfig.Url+"//"+ CurrnetConfig.PacketName+".zip",
+                Url = CurrnetConfig.Url + "//" + CurrnetConfig.PacketName + ".zip",
                 Version = CurrnetConfig.Version
             });
 
@@ -64,7 +61,7 @@ public partial class OSSPacketViewModel : ObservableObject
         }
         catch (Exception e)
         {
-            MessageBox.Show("Append fail", "Fail", Buttons.OK);
+            App.NotifyHelper.ShowErrorMessage("Append fail");
         }
     }
 
@@ -74,11 +71,12 @@ public partial class OSSPacketViewModel : ObservableObject
         try
         {
             await ClipboardUtility.SetText(CurrnetConfig.JsonContent);
-            await MessageBox.ShowAsync("Copy success", "Success", Buttons.OK);
+
+            App.NotifyHelper.ShowInfoMessage("Copy success");
         }
         catch (Exception e)
         {
-            await MessageBox.ShowAsync("Copy fail", "Fail", Buttons.OK);
+            App.NotifyHelper.ShowErrorMessage("Copy fail");
         }
     }
 
@@ -120,12 +118,12 @@ public partial class OSSPacketViewModel : ObservableObject
                     message = "Build fail";
                 }
 
-                await MessageBox.ShowAsync(message, caption, Buttons.OK);
+                App.NotifyHelper.ShowInfoMessage(message, caption);
             }
         }
         catch (Exception e)
         {
-            await MessageBox.ShowAsync("Build fail", "Fail", Buttons.OK);
+            App.NotifyHelper.ShowErrorMessage("Build fail");
         }
     }
 

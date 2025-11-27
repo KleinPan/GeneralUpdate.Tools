@@ -13,16 +13,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.8" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
+        <PackageReference Include="Avalonia" Version="11.3.9" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.9" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.8" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.9" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="GeneralUpdate.Core" Version="9.4.7" />
-        <PackageReference Include="Nlnet.Avalonia.MessageBox" Version="1.0.2" />
-        <PackageReference Include="Semi.Avalonia" Version="11.3.7" />
-        <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.6.6" />
+        <PackageReference Include="Semi.Avalonia" Version="11.3.7.1" />
+        <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9" />
     </ItemGroup>
 </Project>

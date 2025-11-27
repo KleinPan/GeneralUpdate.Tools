@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Unicode;
 
-namespace GeneralUpdate.Tool.Avalonia;
+namespace GeneralUpdate.Tool.Avalonia.Helpers;
 
 public class IOHelper
 {
