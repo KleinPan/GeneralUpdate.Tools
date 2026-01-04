@@ -19,11 +19,11 @@ public partial class PacketConfigVM : ObservableObject
     [ObservableProperty]
     private string _patchDirectory;
 
-    /// <summary>发布程序目录</summary>
+    /// <summary>最近版本的文件夹路径</summary>
     [ObservableProperty]
     private string _releaseDirectory;
 
-    /// <summary>最近一次发布的应用程序目录</summary>
+    /// <summary>上一个版本的文件夹路径</summary>
     [ObservableProperty]
     private string _appDirectory;
 

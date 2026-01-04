@@ -120,6 +120,7 @@ public partial class PacketViewModel : ObservableObject
     {
         try
         {
+            //生成补丁文件[不能包含文件名相同但扩展名不同的文件]。
             await DifferentialCore.Instance.Clean(ConfigModel.AppDirectory,
                 ConfigModel.ReleaseDirectory,
                 ConfigModel.PatchDirectory);
