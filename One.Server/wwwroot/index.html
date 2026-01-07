@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>在线设备列表</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        select {
+            padding: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            background: #4caf50;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>当前在线设备</h1>
+
+    <div class="toolbar">
+        <label>
+            应用：
+            <select id="appFilter">
+                <option value="">全部</option>
+            </select>
+        </label>
+
+        <label>
+            主机：
+            <select id="hostFilter">
+                <option value="">全部</option>
+            </select>
+        </label>
+
+        <label>
+            版本：
+            <select id="versionFilter">
+                <option value="">全部</option>
+            </select>
+        </label>
+
+        <button onclick="loadData()">刷新</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ClientID</th>
+                <th>App</th>
+                <th>Host</th>
+                <th>Version</th>
+                <th>IP</th>
+                <th>在线时长</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody id="deviceTable"></tbody>
+    </table>
+
+    <script>
+        const apiUrl = "/api/client/list";
+        let allData = [];
+
+        async function loadData() {
+            const tbody = document.getElementById("deviceTable");
+            tbody.innerHTML = "";
+
+            try {
+                const res = await fetch(apiUrl, { cache: "no-store" });
+                allData = await res.json();
+            } catch {
+                allData = [];
+            }
+
+            buildFilters(allData);
+            renderTable();
+        }
+
+        function buildFilters(data) {
+            fillSelect("appFilter", data.map(d => d.AppName));
+            fillSelect("hostFilter", data.map(d => d.HostName));
+            fillSelect("versionFilter", data.map(d => d.Version));
+
+        }
+
+        function fillSelect(id, values) {
+            const select = document.getElementById(id);
+            const current = select.value;
+            select.innerHTML = '<option value="">全部</option>';
+
+            [...new Set(values.filter(Boolean))].forEach(v => {
+                const opt = document.createElement("option");
+                opt.value = v;
+                opt.textContent = v;
+                select.appendChild(opt);
+            });
+
+            select.value = current;
+        }
+
+        function renderTable() {
+            const app = document.getElementById("appFilter").value;
+            const host = document.getElementById("hostFilter").value;
+            const ver = document.getElementById("versionFilter").value;
+
+            const tbody = document.getElementById("deviceTable");
+            tbody.innerHTML = "";
+
+            allData
+                .filter(d =>
+                    (!app || d.AppName === app) &&
+                    (!host || d.HostName === host) &&
+                    (!ver || d.Version === ver)
+                )
+                .forEach(d => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+            <td>${d.ClientID}</td>
+            <td>${d.AppName}</td>
+            <td>${d.HostName}</td>
+            <td>${d.Version}</td>
+            <td>${d.Ip}</td>
+            <td>${formatOnlineTime(d.OnlineTime)}</td>
+            <td><span class="badge">在线</span></td>`;
+                    tbody.appendChild(tr);
+                });
+        }
+
+        function formatOnlineTime(time) {
+            const t = new Date(time);
+            const diff = (Date.now() - t.getTime()) / 1000;
+
+            if (diff < 60) return "刚刚";
+            if (diff < 3600) return Math.floor(diff / 60) + " 分钟";
+            return Math.floor(diff / 3600) + " 小时";
+        }
+
+        // 监听筛选变化
+        ["appFilter", "hostFilter", "versionFilter"].forEach(id => {
+            document.getElementById(id).addEventListener("change", renderTable);
+        });
+
+        // 自动刷新（5 秒）
+        setInterval(loadData, 5000);
+
+        // 首次加载
+        loadData();
+    </script>
+</body>
+</html>
