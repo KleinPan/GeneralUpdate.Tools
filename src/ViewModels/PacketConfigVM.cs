@@ -11,6 +11,9 @@ public partial class PacketConfigVM : ObservableObject
     [ObservableProperty]
     private string _path;
 
+    [ObservableProperty]
+    private string version;
+
     /// <summary>补丁包名称</summary>
     [ObservableProperty]
     private string _name;

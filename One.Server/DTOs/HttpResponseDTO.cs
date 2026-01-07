@@ -1,4 +1,4 @@
-namespace GeneralUpdate.Server.DTOs;
+namespace One.Server.DTOs;
 
 public class HttpResponseDTO
 {

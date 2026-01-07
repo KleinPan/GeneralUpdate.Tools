@@ -1,4 +1,4 @@
-namespace GeneralUpdate.Server
+namespace One.Server
 {
     public class WeatherForecast
     {

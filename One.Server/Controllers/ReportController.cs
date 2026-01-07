@@ -1,32 +1,33 @@
-﻿namespace GeneralUpdate.Server.Controllers;
+﻿namespace One.Server.Controllers;
 
-using GeneralUpdate.Server.DeviceManager;
-using GeneralUpdate.Server.DTOs;
-using GeneralUpdate.Server.Hubs;
-using GeneralUpdate.Server.Services;
+using One.Server.DeviceManager;
+using One.Server.DTOs;
+using One.Server.Hubs;
+using One.Server.Services;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 [ApiController]
-[Route("api/report")]
+[Route("api/client")]
 public class ReportController : ControllerBase
 {
-    private readonly DeviceSessionService _deviceService;
+    private readonly ClientStateManager _deviceService;
     private readonly IHubContext<UpgradeHub> _hub;
 
-    public ReportController(DeviceSessionService deviceService, IHubContext<UpgradeHub> hub)
+    public ReportController(ClientStateManager deviceService, IHubContext<UpgradeHub> hub)
     {
         _deviceService = deviceService;
         _hub = hub;
     }
 
-    [HttpPost("online")]
-    public async Task<IActionResult> Online([FromBody] DeviceOnlineDto dto)
+    [HttpPost("heartbeat")]
+    public async Task<IActionResult> status([FromBody] ClientHeartbeatDTO dto)
     {
         var session = new DeviceSession
         {
-            DeviceId = dto.DeviceId,
+            ClientID = dto.ClientID,
+            Token = dto.Token,
             HostName = dto.HostName,
             AppName = dto.AppName,
             Version = dto.Version,

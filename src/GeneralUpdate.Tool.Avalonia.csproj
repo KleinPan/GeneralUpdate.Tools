@@ -24,4 +24,8 @@
         <PackageReference Include="Semi.Avalonia" Version="11.3.7.1" />
         <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GeneralUpdate.Common\GeneralUpdate.Common.csproj" />
+    </ItemGroup>
 </Project>

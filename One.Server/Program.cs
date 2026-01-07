@@ -1,7 +1,7 @@
-using GeneralUpdate.Server.Hubs;
-using GeneralUpdate.Server.Services;
+using One.Server.Hubs;
+using One.Server.Services;
 
-namespace GeneralUpdate.Server;
+namespace One.Server;
 
 public class Program
 {
@@ -11,7 +11,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddSingleton<DeviceSessionService>();
+        builder.Services.AddSingleton<ClientStateManager>();
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -37,6 +37,16 @@ public class Program
 
         app.MapHub<UpgradeHub>("/UpgradeHub");
 
+        app.MapGet("/debug/webroot", (IWebHostEnvironment env) =>
+        {
+            return Results.Ok(new
+            {
+                env.WebRootPath,
+                Exists = Directory.Exists(env.WebRootPath),
+                PackagesExists = Directory.Exists(
+                    Path.Combine(env.WebRootPath, "packages"))
+            });
+        });
         app.Run();
     }
 }

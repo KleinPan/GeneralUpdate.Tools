@@ -14,4 +14,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GeneralUpdate.Common\GeneralUpdate.Common.csproj" />
+  </ItemGroup>
+
 </Project>

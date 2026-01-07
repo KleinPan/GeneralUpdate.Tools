@@ -1,7 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.OpenGL;
+
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using GeneralUpdate.Common.Compress;
+using GeneralUpdate.Common.HashAlgorithms;
+using GeneralUpdate.Common.Models;
 using GeneralUpdate.Differential;
 using GeneralUpdate.Tool.Avalonia.Helpers;
 using GeneralUpdate.Tool.Avalonia.Models;
@@ -14,8 +18,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
-using Tmds.DBus.Protocol;
 
 namespace GeneralUpdate.Tool.Avalonia.ViewModels;
 
@@ -67,15 +69,15 @@ public partial class PacketViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            App.NotifyHelper.ShowErrorMessage($"Load fail => {ex}" );
-           
+            App.NotifyHelper.ShowErrorMessage($"Load fail => {ex}");
         }
     }
 
     [RelayCommand]
     private void ResetAction()
     {
-        ConfigModel.Name = GenerateFileName("1.0.0.0");
+        //ConfigModel!.Name = GenerateFileName("1.0.0.0");
+        ConfigModel!.Version = "1.0.0.0";
         ConfigModel.ReleaseDirectory = GetPlatformSpecificPath();
         ConfigModel.AppDirectory = GetPlatformSpecificPath();
         ConfigModel.PatchDirectory = GetPlatformSpecificPath();
@@ -121,7 +123,7 @@ public partial class PacketViewModel : ObservableObject
         try
         {
             //生成补丁文件[不能包含文件名相同但扩展名不同的文件]。
-            await DifferentialCore.Instance.Clean(ConfigModel.AppDirectory,
+            await DifferentialCore.Instance.Clean(ConfigModel!.AppDirectory,
                 ConfigModel.ReleaseDirectory,
                 ConfigModel.PatchDirectory);
 
@@ -130,24 +132,37 @@ public partial class PacketViewModel : ObservableObject
             var operationType = ConfigModel.Format.Value;
             var encoding = ConfigModel.Encoding.Value;
 
-            CompressProvider.Compress(operationType
-                , ConfigModel.PatchDirectory
-                , Path.Combine(parentDirectory, ConfigModel.Name + ConfigModel.Format.Value)
-                , false, encoding);
+            var buildTime = GenerateDateTime();
+            var packName = $"packet_{buildTime}_V{ConfigModel.Version}"; ;
+            var packPath = Path.Combine(parentDirectory, packName + ConfigModel.Format.Value);
+            CompressProvider.Compress(operationType, ConfigModel.PatchDirectory, packPath, false, encoding);
 
             if (Directory.Exists(ConfigModel.PatchDirectory))
                 DeleteDirectoryRecursively(ConfigModel.PatchDirectory);
 
-            var packetInfo = new FileInfo(Path.Combine(parentDirectory, $"{ConfigModel.Name}{ConfigModel.Format.Value}"));
+            var packetInfo = new FileInfo(Path.Combine(parentDirectory, $"{packName}{ConfigModel.Format.Value}"));
             if (packetInfo.Exists)
             {
                 ConfigModel.Path = packetInfo.FullName;
-               
+
                 App.NotifyHelper.ShowInfoMessage("Build success");
+                var versionInfo = new FileInfo(Path.Combine(parentDirectory, $"VersionInfo_V{ConfigModel.Version}.json"));
+
+                VersionInfoM versionInfoM = new VersionInfoM();
+                versionInfoM.PacketName = packName;
+                versionInfoM.Format = ConfigModel.Format.Value;
+                Sha256HashAlgorithm hashAlgorithm = new();
+                versionInfoM.Hash = hashAlgorithm.ComputeHash(packPath);
+
+                versionInfoM.Version = ConfigModel.Version;
+                versionInfoM.BuildTime = buildTime;
+
+                IOHelper.Instance.WriteContentTolocal(versionInfoM, versionInfo.FullName);
+
+                ConfigModel.Name = packName;
             }
             else
             {
-                
                 App.NotifyHelper.ShowErrorMessage("Build fail");
             }
 
@@ -161,7 +176,7 @@ public partial class PacketViewModel : ObservableObject
         catch (Exception e)
         {
             Trace.WriteLine(e.Message);
-             
+
             App.NotifyHelper.ShowErrorMessage(e.Message);
         }
     }
@@ -183,10 +198,11 @@ public partial class PacketViewModel : ObservableObject
         throw new PlatformNotSupportedException("Unsupported OS");
     }
 
-    private string GenerateFileName(string version)
+    private string GenerateDateTime()
     {
-        string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-        return $"packet_{timestamp}_{version}";
+        string timestamp = DateTime.Now.ToString("yyyyMMddHH_mmssfff");
+        return timestamp;
+        //return $"packet_{timestamp}_{version}";
     }
 
     private void DeleteDirectoryRecursively(string targetDir)
