@@ -1,12 +1,12 @@
 ﻿namespace One.Server.Controllers;
 
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+
 using One.Server.DeviceManager;
 using One.Server.DTOs;
 using One.Server.Hubs;
 using One.Server.Services;
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 [ApiController]
 [Route("api/client")]
@@ -35,10 +35,6 @@ public class ReportController : ControllerBase
         };
 
         _deviceService.AddOrUpdate(session);
-
-        //await _hub.Clients.All.SendAsync(
-        //    "Online",
-        //    $"{dto.DeviceId} is online");
 
         return Ok();
     }

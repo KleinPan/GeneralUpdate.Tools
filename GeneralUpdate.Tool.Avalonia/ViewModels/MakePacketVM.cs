@@ -152,12 +152,7 @@ public partial class MakePacketVM : ObservableObject
                     ".git"
                 };
 
-                CopyDirectory(
-                     ConfigVM.ReleaseDirectory,
-                    ConfigVM.PatchDirectory,
-                    ignoreFiles,
-                    ignoreDirs
-                );
+                CopyDirectory(ConfigVM.ReleaseDirectory, ConfigVM.PatchDirectory, ignoreFiles, ignoreDirs);
             }
 
             var directoryInfo = new DirectoryInfo(ConfigVM.PatchDirectory);
@@ -263,11 +258,7 @@ public partial class MakePacketVM : ObservableObject
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 
-    static void CopyDirectory(
-     string sourceDir,
-     string destinationDir,
-     IEnumerable<string>? ignoreFilePatterns = null,
-     ISet<string>? ignoreDirectoryNames = null)
+    static void CopyDirectory(string sourceDir, string destinationDir, IEnumerable<string>? ignoreFilePatterns = null, ISet<string>? ignoreDirectoryNames = null)
     {
         ignoreFilePatterns ??= Array.Empty<string>();
         ignoreDirectoryNames ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>设备在线监控</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        select, input {
+            padding: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .online {
+            color: green;
+            font-weight: bold;
+        }
+
+        .offline {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📡 设备在线状态</h1>
+
+    <div class="toolbar">
+        <input id="filterApp" placeholder="AppName" />
+        <input id="filterVersion" placeholder="Version" />
+        <select id="filterOnline">
+            <option value="">全部</option>
+            <option value="true">在线</option>
+            <option value="false">离线</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ClientID</th>
+                <th>HostName</th>
+                <th>App</th>
+                <th>Version</th>
+                <th>IP</th>
+                <th>状态</th>
+                <th>最后心跳</th>
+            </tr>
+        </thead>
+        <tbody id="deviceTable"></tbody>
+    </table>
+
+    <script>
+        let devices = [];
+
+        /* =============================
+           初始化 HTTP 数据
+        ============================= */
+        async function loadDevices() {
+            const res = await fetch('/api/client/list');
+            devices = await res.json();
+
+            // 初始化 Online 和 LastSeen 字段
+            devices.forEach(d => {
+                d.Online = d.Online ?? false;
+                d.LastSeen = d.LastSeen ?? null;
+            });
+
+            render();
+        }
+
+        /* =============================
+           SignalR 连接
+        ============================= */
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/upgradeHub?role=dashboard", {
+                accessTokenFactory: () => localStorage.getItem("token") || ""
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ClientOnline", data => {
+            const dev = devices.find(d => d.ConnectionId === data.ConnectionId);
+            if (dev) {
+                dev.Online = true;
+                dev.LastSeen = new Date().toLocaleString();
+                render();
+            }
+        });
+
+        connection.on("ClientOffline", data => {
+            const dev = devices.find(d => d.ConnectionId === data.ConnectionId);
+            if (dev) {
+                dev.Online = false;
+                render();
+            }
+        });
+
+        connection.start()
+            .then(() => console.log("SignalR connected"))
+            .catch(console.error);
+
+        /* =============================
+           渲染 & 筛选
+        ============================= */
+        function render() {
+            const tbody = document.getElementById("deviceTable");
+            tbody.innerHTML = "";
+
+            const app = document.getElementById("filterApp").value;
+            const ver = document.getElementById("filterVersion").value;
+            const online = document.getElementById("filterOnline").value;
+
+            devices
+                .filter(d =>
+                    (!app || d.AppName?.includes(app)) &&
+                    (!ver || d.Version?.includes(ver)) &&
+                    (online === "" || String(d.Online) === online)
+                )
+                .forEach(d => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                            <td>${d.ClientID}</td>
+                            <td>${d.HostName}</td>
+                            <td>${d.AppName}</td>
+                            <td>${d.Version}</td>
+                            <td>${d.Ip}</td>
+                            <td class="${d.Online ? 'online' : 'offline'}">
+                                ${d.Online ? '在线' : '离线'}
+                            </td>
+                            <td>${d.LastSeen ?? ''}</td>
+                        `;
+                    tbody.appendChild(tr);
+                });
+        }
+
+        document.querySelectorAll("input,select")
+            .forEach(el => el.addEventListener("input", render));
+
+        loadDevices();
+    </script>
+
+</body>
+</html>

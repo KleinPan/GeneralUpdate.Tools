@@ -37,16 +37,7 @@ public class Program
 
         app.MapHub<UpgradeHub>("/UpgradeHub");
 
-        app.MapGet("/debug/webroot", (IWebHostEnvironment env) =>
-        {
-            return Results.Ok(new
-            {
-                env.WebRootPath,
-                Exists = Directory.Exists(env.WebRootPath),
-                PackagesExists = Directory.Exists(
-                    Path.Combine(env.WebRootPath, "packages"))
-            });
-        });
+        
         app.Run();
     }
 }
