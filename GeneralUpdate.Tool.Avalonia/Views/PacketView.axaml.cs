@@ -10,6 +10,6 @@ public partial class PacketView : UserControl
     public PacketView()
     {
         InitializeComponent();
-        DataContext = new PacketViewModel();
+        DataContext = new MakePacketVM();
     }
 }

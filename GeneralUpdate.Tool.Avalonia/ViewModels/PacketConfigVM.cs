@@ -43,6 +43,8 @@ public partial class PacketConfigVM : ObservableObject
     [ObservableProperty]
     private EncodingModel _encoding;
 
+    [ObservableProperty]
+    public bool isPatch;
     public PacketConfigM ToModel()
     {
         return new PacketConfigM
@@ -52,6 +54,7 @@ public partial class PacketConfigVM : ObservableObject
             PatchDirectory = PatchDirectory,
             ReleaseDirectory = ReleaseDirectory,
             AppDirectory = AppDirectory,
+            IsPatch = IsPatch,
         };
     }
 }
@@ -69,6 +72,8 @@ public class PacketConfigM
     public int FormatIndex { get; set; }
     public int EncodingIndex { get; set; }
 
+    public bool IsPatch { get; set; }
+  
     public PacketConfigVM ToVM()
     {
         return new PacketConfigVM
@@ -78,6 +83,7 @@ public class PacketConfigM
             PatchDirectory = PatchDirectory,
             ReleaseDirectory = ReleaseDirectory,
             AppDirectory = AppDirectory,
+            IsPatch= IsPatch,
         };
     }
 }

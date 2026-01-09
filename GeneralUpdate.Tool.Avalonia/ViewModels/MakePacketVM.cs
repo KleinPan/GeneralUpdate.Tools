@@ -1,6 +1,4 @@
-﻿using Avalonia.OpenGL;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using GeneralUpdate.Common.Compress;
@@ -11,6 +9,7 @@ using GeneralUpdate.Tool.Avalonia.Helpers;
 using GeneralUpdate.Tool.Avalonia.Models;
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -21,10 +20,10 @@ using System.Threading.Tasks;
 
 namespace GeneralUpdate.Tool.Avalonia.ViewModels;
 
-public partial class PacketViewModel : ObservableObject
+public partial class MakePacketVM : ObservableObject
 {
     [ObservableProperty]
-    private PacketConfigVM? _configModel;
+    private PacketConfigVM? _configVM;
 
     public ObservableCollection<AppTypeModel> AppTypes { get; set; } = new();
 
@@ -60,12 +59,20 @@ public partial class PacketViewModel : ObservableObject
 
         try
         {
-            var model = IOHelper.Instance.ReadContentFromLocal<PacketConfigM>(Path.Combine(AppContext.BaseDirectory, "PacketConfig.json"));
+            var path = Path.Combine(AppContext.BaseDirectory, "PacketConfig.json");
+            if (File.Exists(path))
+            {
+                var model = IOHelper.Instance.ReadContentFromLocal<PacketConfigM>(path);
 
-            ConfigModel = model.ToVM();
-            ConfigModel!.Format = Formats[model.FormatIndex];
-            ConfigModel!.Encoding = Encodings[model.EncodingIndex];
-            ConfigModel!.Platform = Platforms[model.PlatformIndex];
+                ConfigVM = model.ToVM();
+                ConfigVM!.Format = Formats[model.FormatIndex];
+                ConfigVM!.Encoding = Encodings[model.EncodingIndex];
+                ConfigVM!.Platform = Platforms[0];
+            }
+            else
+            {
+                ConfigVM = new PacketConfigVM();
+            }
         }
         catch (Exception ex)
         {
@@ -76,13 +83,13 @@ public partial class PacketViewModel : ObservableObject
     [RelayCommand]
     private void ResetAction()
     {
-        //ConfigModel!.Name = GenerateFileName("1.0.0.0");
-        ConfigModel!.Version = "1.0.0.0";
-        ConfigModel.ReleaseDirectory = GetPlatformSpecificPath();
-        ConfigModel.AppDirectory = GetPlatformSpecificPath();
-        ConfigModel.PatchDirectory = GetPlatformSpecificPath();
-        ConfigModel.Encoding = Encodings.First();
-        ConfigModel.Format = Formats.First();
+        //ConfigVM!.Name = GenerateFileName("1.0.0.0");
+        ConfigVM!.Version = "1.0.0.0";
+        ConfigVM.ReleaseDirectory = GetPlatformSpecificPath();
+        ConfigVM.AppDirectory = GetPlatformSpecificPath();
+        ConfigVM.PatchDirectory = GetPlatformSpecificPath();
+        ConfigVM.Encoding = Encodings.First();
+        ConfigVM.Format = Formats.First();
     }
 
     /// <summary>Choose a path</summary>
@@ -99,15 +106,15 @@ public partial class PacketViewModel : ObservableObject
             switch (value)
             {
                 case "App":
-                    ConfigModel.AppDirectory = folder.Path.LocalPath;
+                    ConfigVM.AppDirectory = folder.Path.LocalPath;
                     break;
 
                 case "Release":
-                    ConfigModel.ReleaseDirectory = folder!.Path.LocalPath;
+                    ConfigVM.ReleaseDirectory = folder!.Path.LocalPath;
                     break;
 
                 case "Patch":
-                    ConfigModel.PatchDirectory = folder!.Path.LocalPath;
+                    ConfigVM.PatchDirectory = folder!.Path.LocalPath;
                     break;
             }
         }
@@ -123,53 +130,79 @@ public partial class PacketViewModel : ObservableObject
         try
         {
             //生成补丁文件[不能包含文件名相同但扩展名不同的文件]。
-            await DifferentialCore.Instance.Clean(ConfigModel!.AppDirectory,
-                ConfigModel.ReleaseDirectory,
-                ConfigModel.PatchDirectory);
 
-            var directoryInfo = new DirectoryInfo(ConfigModel.PatchDirectory);
+            if (ConfigVM.IsPatch)
+            {
+                await DifferentialCore.Instance.Clean(ConfigVM!.AppDirectory, ConfigVM.ReleaseDirectory, ConfigVM.PatchDirectory);
+            }
+            else
+            {
+                var ignoreFiles = new[]
+                {
+                    "*.pdb",
+                    "*.log",
+                    "*.tmp",
+                    "*.id"
+                };
+
+                var ignoreDirs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "Logs",
+                    "obj",
+                    ".git"
+                };
+
+                CopyDirectory(
+                     ConfigVM.ReleaseDirectory,
+                    ConfigVM.PatchDirectory,
+                    ignoreFiles,
+                    ignoreDirs
+                );
+            }
+
+            var directoryInfo = new DirectoryInfo(ConfigVM.PatchDirectory);
             var parentDirectory = directoryInfo.Parent!.FullName;
-            var operationType = ConfigModel.Format.Value;
-            var encoding = ConfigModel.Encoding.Value;
+            var operationType = ConfigVM.Format.Value;
+            var encoding = ConfigVM.Encoding.Value;
 
             var buildTime = GenerateDateTime();
-            var packName = $"packet_{buildTime}_V{ConfigModel.Version}"; ;
-            var packPath = Path.Combine(parentDirectory, packName + ConfigModel.Format.Value);
-            CompressProvider.Compress(operationType, ConfigModel.PatchDirectory, packPath, false, encoding);
+            var packName = $"packet_{buildTime}_V{ConfigVM.Version}"; ;
+            var packPath = Path.Combine(parentDirectory, packName + ConfigVM.Format.Value);
+            CompressProvider.Compress(operationType, ConfigVM.PatchDirectory, packPath, false, encoding);
 
-            if (Directory.Exists(ConfigModel.PatchDirectory))
-                DeleteDirectoryRecursively(ConfigModel.PatchDirectory);
+            if (Directory.Exists(ConfigVM.PatchDirectory))
+                DeleteDirectoryRecursively(ConfigVM.PatchDirectory);
 
-            var packetInfo = new FileInfo(Path.Combine(parentDirectory, $"{packName}{ConfigModel.Format.Value}"));
+            var packetInfo = new FileInfo(Path.Combine(parentDirectory, $"{packName}{ConfigVM.Format.Value}"));
             if (packetInfo.Exists)
             {
-                ConfigModel.Path = packetInfo.FullName;
+                ConfigVM.Path = packetInfo.FullName;
 
                 App.NotifyHelper.ShowInfoMessage("Build success");
-                var versionInfo = new FileInfo(Path.Combine(parentDirectory, $"VersionInfo_V{ConfigModel.Version}.json"));
+                var versionInfo = new FileInfo(Path.Combine(parentDirectory, $"VersionInfo_V{ConfigVM.Version}.json"));
 
                 VersionInfoM versionInfoM = new VersionInfoM();
                 versionInfoM.PacketName = packName;
-                versionInfoM.Format = ConfigModel.Format.Value;
+                versionInfoM.Format = ConfigVM.Format.Value;
                 Sha256HashAlgorithm hashAlgorithm = new();
                 versionInfoM.Hash = hashAlgorithm.ComputeHash(packPath);
 
-                versionInfoM.Version = ConfigModel.Version;
+                versionInfoM.Version = ConfigVM.Version;
                 versionInfoM.BuildTime = buildTime;
 
                 IOHelper.Instance.WriteContentTolocal(versionInfoM, versionInfo.FullName);
 
-                ConfigModel.Name = packName;
+                ConfigVM.Name = packName;
             }
             else
             {
                 App.NotifyHelper.ShowErrorMessage("Build fail");
             }
 
-            var model = ConfigModel.ToModel();
-            model.PlatformIndex = Platforms.IndexOf(ConfigModel.Platform);
-            model.FormatIndex = Formats.IndexOf(ConfigModel.Format);
-            model.EncodingIndex = Encodings.IndexOf(ConfigModel.Encoding);
+            var model = ConfigVM.ToModel();
+            model.PlatformIndex = Platforms.IndexOf(ConfigVM.Platform);
+            model.FormatIndex = Formats.IndexOf(ConfigVM.Format);
+            model.EncodingIndex = Encodings.IndexOf(ConfigVM.Encoding);
 
             IOHelper.Instance.WriteContentTolocal(model, Path.Combine(AppContext.BaseDirectory, "PacketConfig.json"));
         }
@@ -218,5 +251,57 @@ public partial class PacketViewModel : ObservableObject
             DeleteDirectoryRecursively(dir);
         }
         Directory.Delete(targetDir, false);
+    }
+
+    static bool WildcardMatch(string text, string pattern)
+    {
+        return System.Text.RegularExpressions.Regex.IsMatch(
+            text,
+            "^" + System.Text.RegularExpressions.Regex.Escape(pattern)
+                .Replace(@"\*", ".*")
+                .Replace(@"\?", ".") + "$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    }
+
+    static void CopyDirectory(
+     string sourceDir,
+     string destinationDir,
+     IEnumerable<string>? ignoreFilePatterns = null,
+     ISet<string>? ignoreDirectoryNames = null)
+    {
+        ignoreFilePatterns ??= Array.Empty<string>();
+        ignoreDirectoryNames ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var sourceInfo = new DirectoryInfo(sourceDir);
+
+        // 目录名全匹配过滤
+        if (ignoreDirectoryNames.Contains(sourceInfo.Name))
+            return;
+
+        Directory.CreateDirectory(destinationDir);
+
+        // 复制文件（支持通配符）
+        foreach (var file in sourceInfo.GetFiles())
+        {
+            bool ignored = ignoreFilePatterns.Any(p => WildcardMatch(file.Name, p));
+            if (ignored)
+                continue;
+
+            string destPath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(destPath, true);
+        }
+
+        // 递归子目录
+        foreach (var subdir in sourceInfo.GetDirectories())
+        {
+            if (ignoreDirectoryNames.Contains(subdir.Name))
+                continue;
+
+            CopyDirectory(
+                subdir.FullName,
+                Path.Combine(destinationDir, subdir.Name),
+                ignoreFilePatterns,
+                ignoreDirectoryNames);
+        }
     }
 }

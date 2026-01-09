@@ -8,9 +8,11 @@
         Icon="/Assets/avalonia-logo.ico" CanResize="False"
         Title="GeneralUpdate.Tool.Avalonia">
 <TabControl>
-    <TabItem Header="Packet">
+     <TabItem Header="Make Pack">
         <views:PacketView></views:PacketView>
     </TabItem>
+
+   
     <TabItem Header="OSS Packet">
         <views:OSSPacketView></views:OSSPacketView>
     </TabItem>
