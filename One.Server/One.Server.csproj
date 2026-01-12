@@ -14,4 +14,8 @@
     <ProjectReference Include="..\GeneralUpdate.Common\GeneralUpdate.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

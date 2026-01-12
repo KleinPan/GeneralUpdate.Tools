@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.SignalR;
 using One.Server.DeviceManager;
 using One.Server.DTOs;
 using One.Server.Hubs;
-using One.Server.Services;
 
 [ApiController]
 [Route("api/client")]
@@ -31,6 +30,7 @@ public class ReportController : ControllerBase
             HostName = dto.HostName,
             AppName = dto.AppName,
             Version = dto.Version,
+            OnlineTime = dto.OnlineTime,
             Ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
         };
 

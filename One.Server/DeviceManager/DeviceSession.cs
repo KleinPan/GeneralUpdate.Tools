@@ -12,6 +12,7 @@ public class DeviceSession
 
     /// <summary>当前 SignalR 连接（可为空）</summary>
     public string? ConnectionId { get; set; }
+
     public string? Message { get; set; }
-    public DateTime OnlineTime { get; init; } = DateTime.Now;
+    public DateTime OnlineTime { get; init; }
 }

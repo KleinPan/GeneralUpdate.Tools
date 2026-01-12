@@ -113,16 +113,25 @@
             .build();
 
         connection.on("ClientOnline", data => {
-            const dev = devices.find(d => d.ConnectionId === data.ConnectionId);
-            if (dev) {
+            const dev = devices.find(d => d.ClientID === data.ClientID);
+            //if (dev) {
+            //    dev.Online = true;
+            //    dev.LastSeen = new Date().toLocaleString();
+            //    render();
+            //}
+            if (!dev) {
+                devices.push({
+                    ...data,
+                    Online: true
+                });
+            } else {
                 dev.Online = true;
-                dev.LastSeen = new Date().toLocaleString();
-                render();
+                dev.LastSeen = new Date(data.LastSeen).toLocaleString();
             }
         });
 
         connection.on("ClientOffline", data => {
-            const dev = devices.find(d => d.ConnectionId === data.ConnectionId);
+            const dev = devices.find(d => d.ClientID === data.ClientID);
             if (dev) {
                 dev.Online = false;
                 render();

@@ -10,4 +10,6 @@ public class ClientHeartbeatDTO
     public string Version { get; set; } = default!;
 
     public string Message { get; set; } = default!;
+
+    public DateTime OnlineTime { get; set; }
 }

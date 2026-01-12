@@ -1,7 +1,6 @@
 ﻿using GeneralUpdate.Common.Models;
 using One.Server.DTOs;
 using One.Server.Hubs;
-using One.Server.Services;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -9,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Globalization;
 using System.Net.Sockets;
 using System.Text.Json;
+using One.Server.DeviceManager;
 
 namespace One.Server.Controllers;
 

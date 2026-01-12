@@ -1,10 +1,13 @@
 ﻿namespace One.Server.Hubs;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
-using One.Server.Services;
+using One.Server.DeviceManager;
 
 using System;
+
+using static System.Collections.Specialized.BitVector32;
 
 public class UpgradeHub : Hub
 {
@@ -25,6 +28,7 @@ public class UpgradeHub : Hub
 
         var connectionId = Context.ConnectionId;
 
+        Console.WriteLine($"ConnectionId : {connectionId}");
         await Clients.Caller.SendAsync("ReceiveMessage", "Hub is here!");
 
         if (role == "dashboard")
@@ -34,36 +38,43 @@ public class UpgradeHub : Hub
         else
         {
             await Groups.AddToGroupAsync(connectionId, DEVICE_GROUP);
-            MatchClientStateManager(httpContext, connectionId);
+            var session = MatchClientStateManager(httpContext, connectionId);
+            Console.WriteLine($"ClientID : {session.ClientID}");
 
-            await Clients.Caller.SendAsync("Online", $"Hub => <{connectionId}> is now online.");
+            await Clients.Caller.SendAsync("Online", $"Hub => <{session.ClientID}> is now online.");
+
+            // 🔔 只广播给 Dashboard
+            await Clients.Group(DASHBOARD_GROUP)
+                .SendAsync("ClientOnline", new
+                {
+                    ClientID = session.ClientID,
+                    LastSeen = DateTime.UtcNow
+                });
         }
-
-        // 🔔 只广播给 Dashboard
-        await Clients.Group(DASHBOARD_GROUP)
-            .SendAsync("ClientOnline", new
-            {
-                ConnectionId = Context.ConnectionId
-            });
 
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _deviceService.RemoveByConnectionId(Context.ConnectionId);
+        _deviceService.RemoveByConnectionId(Context.ConnectionId, out DeviceSession device);
 
-        // 🔔 只广播给 Dashboard
+        var connectionId = Context.ConnectionId;
+
+        //var session = SetOffineLine(  connectionId);
+        //// 🔔 只广播给 Dashboard
         await Clients.Group(DASHBOARD_GROUP)
             .SendAsync("ClientOffline", new
             {
-                ConnectionId = Context.ConnectionId
+                ClientID = device.ClientID,
             });
 
         await base.OnDisconnectedAsync(exception);
     }
 
-    private void MatchClientStateManager(HttpContext httpContext, string connectionId)
+    #region Helper
+
+    private string GetToken(HttpContext httpContext)
     {
         string? token = null;
 
@@ -76,8 +87,21 @@ public class UpgradeHub : Hub
 
         if (!string.IsNullOrEmpty(token))
         {
-            Context.Items["token"] = token;
-            _deviceService.BindConnectionByToken(token, connectionId);
+            return token;
+        }
+        else
+        {
+            throw new Exception("token is null!");
         }
     }
+
+    private DeviceSession MatchClientStateManager(HttpContext httpContext, string connectionId)
+    {
+        var token = GetToken(httpContext);
+
+        Context.Items["token"] = token;
+        return _deviceService.BindConnectionByToken(token, connectionId);
+    }
+
+    #endregion Helper
 }
