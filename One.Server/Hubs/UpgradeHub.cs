@@ -7,8 +7,6 @@ using One.Server.DeviceManager;
 
 using System;
 
-using static System.Collections.Specialized.BitVector32;
-
 public class UpgradeHub : Hub
 {
     private const string DASHBOARD_GROUP = "Dashboard";
@@ -28,7 +26,7 @@ public class UpgradeHub : Hub
 
         var connectionId = Context.ConnectionId;
 
-        Console.WriteLine($"ConnectionId : {connectionId}");
+        //Console.WriteLine($"OnConnectedAsync ConnectionId : {connectionId}");
         await Clients.Caller.SendAsync("ReceiveMessage", "Hub is here!");
 
         if (role == "dashboard")
@@ -38,8 +36,13 @@ public class UpgradeHub : Hub
         else
         {
             await Groups.AddToGroupAsync(connectionId, DEVICE_GROUP);
-            var session = MatchClientStateManager(httpContext, connectionId);
-            Console.WriteLine($"ClientID : {session.ClientID}");
+
+            var token = GetToken(httpContext);
+            Context.Items["token"] = token;
+            var session = _deviceService.BindConnectionByToken(token, connectionId);
+
+
+            //Console.WriteLine($"ClientID : {session.ClientID}");
 
             await Clients.Caller.SendAsync("Online", $"Hub => <{session.ClientID}> is now online.");
 
@@ -59,10 +62,16 @@ public class UpgradeHub : Hub
     {
         _deviceService.RemoveByConnectionId(Context.ConnectionId, out DeviceSession device);
 
-        var connectionId = Context.ConnectionId;
+
+        //Console.WriteLine($"OnDisconnectedAsync ConnectionId : {Context.ConnectionId}");
 
         //var session = SetOffineLine(  connectionId);
         //// 🔔 只广播给 Dashboard
+
+        if (device==null)
+        {
+            return;
+        }
         await Clients.Group(DASHBOARD_GROUP)
             .SendAsync("ClientOffline", new
             {
@@ -95,13 +104,7 @@ public class UpgradeHub : Hub
         }
     }
 
-    private DeviceSession MatchClientStateManager(HttpContext httpContext, string connectionId)
-    {
-        var token = GetToken(httpContext);
 
-        Context.Items["token"] = token;
-        return _deviceService.BindConnectionByToken(token, connectionId);
-    }
 
     #endregion Helper
 }

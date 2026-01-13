@@ -5,7 +5,7 @@ public class DeviceSession
     public string ClientID { get; init; } = default!;
     public string HostName { get; init; } = default!;
     public string Ip { get; init; } = default!;
-    public string Token { get; init; } = default!;
+    public string Token { get; set; } = default!;
 
     public string AppName { get; init; }
     public string Version { get; init; } = default!;

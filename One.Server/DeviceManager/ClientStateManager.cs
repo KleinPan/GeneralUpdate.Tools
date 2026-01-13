@@ -22,6 +22,7 @@ public class ClientStateManager
                     session,
                     (_, existing) =>
                     {
+                        existing.Token= session.Token;
                         return existing;
                     });
     }
@@ -43,6 +44,10 @@ public class ClientStateManager
     {
         var client = _devices.Values.FirstOrDefault(c => c.Token == token);
 
+        if (client==null)
+        {
+            return null;
+        }
         client.ConnectionId = connectionId;
 
         return client;
