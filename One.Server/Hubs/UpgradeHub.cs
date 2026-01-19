@@ -51,6 +51,7 @@ public class UpgradeHub : Hub
                 .SendAsync("ClientOnline", new
                 {
                     ClientID = session.ClientID,
+                    IP=session.Ip,
                     LastSeen = DateTime.UtcNow
                 });
         }
@@ -60,7 +61,7 @@ public class UpgradeHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _deviceService.RemoveByConnectionId(Context.ConnectionId, out DeviceSession device);
+        _deviceService.RemoveByConnectionId(Context.ConnectionId, out DeviceSession session);
 
 
         //Console.WriteLine($"OnDisconnectedAsync ConnectionId : {Context.ConnectionId}");
@@ -68,14 +69,16 @@ public class UpgradeHub : Hub
         //var session = SetOffineLine(  connectionId);
         //// 🔔 只广播给 Dashboard
 
-        if (device==null)
+        if (session==null)
         {
             return;
         }
         await Clients.Group(DASHBOARD_GROUP)
             .SendAsync("ClientOffline", new
             {
-                ClientID = device.ClientID,
+                ClientID = session.ClientID,
+                IP = session.Ip,
+                LastSeen = DateTime.UtcNow
             });
 
         await base.OnDisconnectedAsync(exception);

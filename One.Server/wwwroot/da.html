@@ -1,186 +1,556 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title>设备在线监控</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
-
+    <meta charset="UTF-8">
+    <title>设备监控中心</title>
     <style>
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f6fa;
-            padding: 20px;
+            margin: 0;
+            font-family: "Segoe UI", Arial;
+            background: #f3f5f9;
         }
 
-        h1 {
-            margin-bottom: 10px;
-        }
-
-        .toolbar {
+        .layout {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            height: 100vh;
         }
 
-        select, input {
-            padding: 5px;
+        /* ===== 左侧 ===== */
+        .sidebar {
+            width: 220px;
+            background: #0f172a;
+            color: #fff;
+            padding: 16px;
         }
 
+            .sidebar .logo {
+                font-size: 15px;
+                font-weight: 600;
+                margin-bottom: 20px;
+            }
+
+        .menu a {
+            display: block;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            color: #cbd5f5;
+            cursor: pointer;
+        }
+
+            .menu a.active {
+                background: #19c2a2;
+                color: #fff;
+            }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            padding: 0 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            background: #fff;
+            color: #374151;
+        }
+
+            .btn:hover {
+                background: #f9fafb;
+            }
+
+        .btn-primary {
+            background: #19c2a2;
+            color: #fff;
+            border-color: #19c2a2;
+        }
+
+            .btn-primary:hover {
+                background: #16a085;
+            }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+        /* ===== 右侧 ===== */
+        .content {
+            flex: 1;
+            padding: 16px 24px;
+        }
+
+        /* 页面标题区 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+            .page-header h2 {
+                margin: 0;
+                font-size: 18px;
+            }
+
+            .page-header button {
+                padding: 6px 12px;
+            }
+
+        /* 分割线 */
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin-bottom: 16px;
+        }
+
+        /* 页面 */
+        .page {
+            display: none;
+        }
+
+            .page.active {
+                display: block;
+            }
+
+        /* 卡片 */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* 概览统计 */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 16px;
+        }
+
+        .summary-item h4 {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .summary-item .value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* 表格 */
         table {
             width: 100%;
             border-collapse: collapse;
-            background: #fff;
+            table-layout: fixed;
         }
 
         th, td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
+            padding: 10px 12px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
             text-align: left;
+            word-break: break-word;
         }
 
         th {
-            background: #f0f0f0;
+            background: #f8fafc;
         }
 
-        .online {
-            color: green;
-            font-weight: bold;
+            /* 设置各列宽度 */
+            th:nth-child(1), td:nth-child(1) {
+                width: 20%;
+            }
+            /* 设备名 */
+            th:nth-child(2), td:nth-child(2) {
+                width: 15%;
+            }
+            /* IP */
+            th:nth-child(3), td:nth-child(3) {
+                width: 20%;
+            }
+            /* 应用 */
+            th:nth-child(4), td:nth-child(4) {
+                width: 10%;
+            }
+            /* 版本 */
+            th:nth-child(5), td:nth-child(5) {
+                width: 10%;
+            }
+            /* 状态 */
+            th:nth-child(6), td:nth-child(6) {
+                width: 25%;
+            }
+        /* 上线时间 */
+
+        /* 状态标签 */
+        .tag {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
         }
 
-        .offline {
-            color: red;
+            .tag.online {
+                background: #e6fffa;
+                color: #059669;
+            }
+
+            .tag.warn {
+                background: #fff7ed;
+                color: #d97706;
+            }
+
+        .history-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
         }
+
+            .history-item:last-child {
+                border-bottom: none;
+            }
+
+        .history-icon {
+            margin-right: 12px;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .history-ip {
+            color: #6b7280;
+            font-weight: normal;
+        }
+
+        .history-meta {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .history-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: right;
+            min-width: 120px;
+        }
+
+            .history-time div:first-child {
+                color: #374151;
+                font-weight: 500;
+                margin-bottom: 2px;
+            }
     </style>
 </head>
 
 <body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">设备监控中心</div>
+            <nav class="menu">
+                <a class="active" data-page="dashboard">概览面板</a>
+                <a data-page="devices">设备列表</a>
+                <a data-page="history">连接历史</a>
+                <a data-page="settings">设置</a>
+            </nav>
+        </aside>
 
-    <h1>📡 设备在线状态</h1>
+        <main class="content">
+            <div class="page-header">
+                <h2 id="title">概览面板</h2>
+                <button class="btn btn-primary" onclick="load()">刷新</button>
+            </div>
+            <div class="divider"></div>
 
-    <div class="toolbar">
-        <input id="filterApp" placeholder="AppName" />
-        <input id="filterVersion" placeholder="Version" />
-        <select id="filterOnline">
-            <option value="">全部</option>
-            <option value="true">在线</option>
-            <option value="false">离线</option>
-        </select>
+            <!-- 概览 -->
+            <section id="page-dashboard" class="page active">
+                <div class="summary">
+                    <div class="card summary-item">
+                        <h4>设备总数</h4>
+                        <div class="value" id="total">0</div>
+                    </div>
+                    <div class="card summary-item">
+                        <h4>在线设备</h4>
+                        <div class="value" id="online">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 设备列表 -->
+            <section id="page-devices" class="page">
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>设备名</th>
+                                <th>IP</th>
+                                <th>应用</th>
+                                <th>版本</th>
+                                <th>状态</th>
+                                <th>上线时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 连接历史 -->
+            <section id="page-history" class="page">
+                <div class="card">
+                    <h3>连接历史记录</h3>
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="history-icon">✔</div>
+                            <div class="history-content">
+                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span></div>
+                                <div class="history-meta">设备成功连接到服务器</div>
+
+                            </div>
+                            <div class="history-time">
+                                <div>4分钟前</div>
+                                <div>2026/1/19 12:09:06</div>
+                            </div>
+                        </div><div class="history-item">
+                            <div class="history-icon">❌</div>
+                            <div class="history-content">
+                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span></div>
+                                <div class="history-meta">设备成功连接到服务器</div>
+
+                            </div>
+                            <div class="history-time">
+                                <div>4分钟前</div>
+                                <div>2026/1/19 12:09:06</div>
+                            </div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-icon">⚠️</div>
+                            <div class="history-content">
+                                <div class="history-title">缓存服务器-01 <span class="history-ip">(192.168.1.105)</span></div>
+                                <div class="history-meta">CPU使用率超过85%警告</div>
+
+                            </div>
+                            <div class="history-time">
+                                <div>8分钟前</div>
+                                <div>2026/1/19 12:05:06</div>
+                            </div>
+                        </div>
+                    </div>
+
+            </section>
+
+            <!-- 设置 -->
+            <section id="page-settings" class="page">
+                <div class="card">
+                    自动刷新：开启
+                </div>
+            </section>
+        </main>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ClientID</th>
-                <th>HostName</th>
-                <th>App</th>
-                <th>Version</th>
-                <th>IP</th>
-                <th>状态</th>
-                <th>最后心跳</th>
-            </tr>
-        </thead>
-        <tbody id="deviceTable"></tbody>
-    </table>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
-        let devices = [];
+        //const API = "http://10.119.30.34:5030/api/client/list";
+        const API = "http://localhost:5030/api/devices";
 
-        /* =============================
-           初始化 HTTP 数据
-        ============================= */
-        async function loadDevices() {
-            const res = await fetch('/api/client/list');
-            devices = await res.json();
-
-            // 初始化 Online 和 LastSeen 字段
-            devices.forEach(d => {
-                d.Online = d.Online ?? false;
-                d.LastSeen = d.LastSeen ?? null;
-            });
-
-            render();
-        }
-
-        /* =============================
-           SignalR 连接
-        ============================= */
+        // SignalR连接初始化
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/upgradeHub?role=dashboard", {
-                accessTokenFactory: () => localStorage.getItem("token") || ""
-            })
-            .withAutomaticReconnect()
+            .withUrl("/upgradeHub?role=dashboard")
+            .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        connection.on("ClientOnline", data => {
-            const dev = devices.find(d => d.ClientID === data.ClientID);
-            //if (dev) {
-            //    dev.Online = true;
-            //    dev.LastSeen = new Date().toLocaleString();
-            //    render();
-            //}
-            if (!dev) {
-                devices.push({
-                    ...data,
-                    Online: true
-                });
-            } else {
-                dev.Online = true;
-                dev.LastSeen = new Date(data.LastSeen).toLocaleString();
+        // 处理在线客户端通知
+        connection.on("ClientOnline", (client) => {
+            const historyList = document.querySelector(".history-list");
+            const now = new Date();
+            const localTime = new Date(client.lastSeen).toLocaleString();
+            const minutesAgo = Math.floor((now - new Date(client.lastSeen)) / (1000 * 60));
+
+            const newItem = document.createElement("div");
+            newItem.className = "history-item";
+            newItem.innerHTML = `
+                        <div class="history-icon">✔</div>
+                        <div class="history-content">
+                            <div class="history-title">${client.clientID} <span class="history-ip">(${client.ip})</span></div>
+                            <div class="history-meta">设备成功连接到服务器</div>
+                        </div>
+                        <div class="history-time">
+                            <div>${minutesAgo}分钟前</div>
+                            <div>${localTime}</div>
+                        </div>
+                    `;
+
+            historyList.insertBefore(newItem, historyList.firstChild);
+            if (historyList.children.length > 50) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        });
+        // 处理离线客户端下线通知
+        connection.on("ClientOffline", (client) => {
+            const historyList = document.querySelector(".history-list");
+            const now = new Date();
+            const localTime = new Date(client.lastSeen).toLocaleString();
+            const minutesAgo = Math.floor((now - new Date(client.lastSeen)) / (1000 * 60));
+
+            const newItem = document.createElement("div");
+            newItem.className = "history-item";
+            newItem.innerHTML = `
+                    <div class="history-icon">✔</div>
+                    <div class="history-content">
+                        <div class="history-title">${client.clientID} <span class="history-ip">(${client.ip})</span></div>
+                        <div class="history-meta">设备连接断开</div>
+                    </div>
+                    <div class="history-time">
+                        <div>${minutesAgo}分钟前</div>
+                        <div>${localTime}</div>
+                    </div>
+                `;
+
+            historyList.insertBefore(newItem, historyList.firstChild);
+            if (historyList.children.length > 50) {
+                historyList.removeChild(historyList.lastChild);
             }
         });
 
-        connection.on("ClientOffline", data => {
-            const dev = devices.find(d => d.ClientID === data.ClientID);
-            if (dev) {
-                dev.Online = false;
-                render();
-            }
+        connection.start().then(() => {
+            console.log('SignalR 连接已启动');
+        }).catch(err => {
+            console.error('SignalR 连接失败:', err);
         });
 
-        connection.start()
-            .then(() => console.log("SignalR connected"))
-            .catch(console.error);
+        // 启动SignalR连接
+        async function startConnection() {
+            try {
+                console.log("Attempting to connect to SignalR Hub...");
+                await connection.start();
+                console.log("SignalR Connected successfully.");
 
-        /* =============================
-           渲染 & 筛选
-        ============================= */
-        function render() {
-            const tbody = document.getElementById("deviceTable");
-            tbody.innerHTML = "";
+                // 更新连接状态指示
+                updateConnectionStatus(true);
 
-            const app = document.getElementById("filterApp").value;
-            const ver = document.getElementById("filterVersion").value;
-            const online = document.getElementById("filterOnline").value;
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
+                updateConnectionStatus(false);
 
-            devices
-                .filter(d =>
-                    (!app || d.AppName?.includes(app)) &&
-                    (!ver || d.Version?.includes(ver)) &&
-                    (online === "" || String(d.Online) === online)
-                )
-                .forEach(d => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                            <td>${d.ClientID}</td>
-                            <td>${d.HostName}</td>
-                            <td>${d.AppName}</td>
-                            <td>${d.Version}</td>
-                            <td>${d.Ip}</td>
-                            <td class="${d.Online ? 'online' : 'offline'}">
-                                ${d.Online ? '在线' : '离线'}
-                            </td>
-                            <td>${d.LastSeen ?? ''}</td>
-                        `;
-                    tbody.appendChild(tr);
-                });
+                // 显示错误通知
+                showErrorNotification("连接服务器失败，5秒后重试...");
+
+                // 5秒后重试
+                setTimeout(startConnection, 5000);
+            }
         }
 
-        document.querySelectorAll("input,select")
-            .forEach(el => el.addEventListener("input", render));
+        // 更新连接状态UI
+        function updateConnectionStatus(isConnected) {
+            const statusIndicator = document.getElementById("connection-status");
+            if (statusIndicator) {
+                statusIndicator.textContent = isConnected ? "已连接" : "已断开";
+                statusIndicator.style.color = isConnected ? "#059669" : "#dc2626";
+            }
+        }
 
-        loadDevices();
+        // 显示错误通知
+        function showErrorNotification(message) {
+            const notification = document.createElement("div");
+            notification.className = "error-notification";
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // 添加连接状态指示器
+        const statusIndicator = document.createElement("div");
+        statusIndicator.id = "connection-status";
+        statusIndicator.style.position = "fixed";
+        statusIndicator.style.bottom = "10px";
+        statusIndicator.style.right = "10px";
+        statusIndicator.style.padding = "5px 10px";
+        statusIndicator.style.background = "#fff";
+        statusIndicator.style.borderRadius = "4px";
+        statusIndicator.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
+        document.body.appendChild(statusIndicator);
+
+
+        connection.onclose(async () => {
+            await startConnection();
+        });
+
+        startConnection();
+
+        const menus = document.querySelectorAll(".menu a");
+        const pages = document.querySelectorAll(".page");
+        const title = document.getElementById("title");
+
+        menus.forEach(m => {
+            m.onclick = () => {
+                menus.forEach(x => x.classList.remove("active"));
+                m.classList.add("active");
+                pages.forEach(p => p.classList.remove("active"));
+                document.getElementById("page-" + m.dataset.page).classList.add("active");
+                title.innerText = m.innerText;
+            };
+        });
+
+        async function load() {
+            // 业务演示数据
+            const demoData = [
+                {
+                    HostName: "生产服务器-01",
+                    Ip: "192.168.1.101",
+                    AppName: "生产服务器-01",
+                    Version: "2.1.5",
+                    OnlineTime: Date.now()
+                }]
+            // 初始化历史记录列表
+            document.querySelector(".history-list").innerHTML = "";
+
+
+            const list = await fetch(API).then(r => r.json()).catch(() => demoData);
+
+            document.getElementById("total").innerText = list.length;
+            document.getElementById("online").innerText = list.length;
+
+            const tb = document.getElementById("tbody");
+            tb.innerHTML = "";
+            list.forEach(d => {
+                tb.innerHTML += `
+                    <tr>
+                        <td>${d.HostName}</td>
+                        <td>${d.Ip}</td>
+                        <td>${d.AppName}</td>
+                        <td>${d.Version}</td>
+                        <td><span class="tag online">在线</span></td>
+                        <td>${new Date(d.OnlineTime).toLocaleString()}</td>
+                    </tr>`;
+            });
+
+            const h = document.getElementById("history");
+            h.innerHTML = list.map(d => `<div>${d.HostName} 已连接</div>`).join("");
+        }
+
+        load();
     </script>
-
 </body>
 </html>
