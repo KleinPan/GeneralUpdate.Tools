@@ -18,11 +18,13 @@ public class ClientStateManager
     public void AddOrUpdate(DeviceSession session)
     {
         _devices.AddOrUpdate(
-                    session.ClientID,
+                    session.MachineInfo.MachineID,
                     session,
                     (_, existing) =>
                     {
-                        existing.Token= session.Token;
+                        existing.InstanceInfo.InstanceID= session.InstanceInfo.InstanceID;
+                        existing.InstanceInfo.ProcessId= session.InstanceInfo.ProcessId;
+                        existing.Ip = session.Ip;
                         return existing;
                     });
     }
@@ -42,7 +44,7 @@ public class ClientStateManager
     /// <returns></returns>
     public DeviceSession BindConnectionByToken(string token, string connectionId)
     {
-        var client = _devices.Values.FirstOrDefault(c => c.Token == token);
+        var client = _devices.Values.FirstOrDefault(c => c.InstanceInfo.InstanceID == token);
 
         if (client==null)
         {

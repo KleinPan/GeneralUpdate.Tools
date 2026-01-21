@@ -37,23 +37,19 @@ public class UpgradeHub : Hub
         {
             await Groups.AddToGroupAsync(connectionId, DEVICE_GROUP);
 
-            var token = GetToken(httpContext);
-            Context.Items["token"] = token;
+            var token = GetToken(httpContext);//每次打开生成
+            var appID = GetAPPKey(httpContext);//APPID
+            //Context.Items["token"] = token;
             var session = _deviceService.BindConnectionByToken(token, connectionId);
 
+ 
 
-            //Console.WriteLine($"ClientID : {session.ClientID}");
-
-            await Clients.Caller.SendAsync("Online", $"Hub => <{session.ClientID}> is now online.");
+            await Clients.Caller.SendAsync("Online", $"Hub => <{appID}> is now online.");
 
             // 🔔 只广播给 Dashboard
             await Clients.Group(DASHBOARD_GROUP)
-                .SendAsync("ClientOnline", new
-                {
-                    ClientID = session.ClientID,
-                    IP=session.Ip,
-                    LastSeen = DateTime.UtcNow
-                });
+                .SendAsync("ClientOnline", session);
+                
         }
 
         await base.OnConnectedAsync();
@@ -69,17 +65,20 @@ public class UpgradeHub : Hub
         //var session = SetOffineLine(  connectionId);
         //// 🔔 只广播给 Dashboard
 
-        if (session==null)
+        if (session == null)
         {
             return;
         }
+        //await Clients.Group(DASHBOARD_GROUP)
+        //    .SendAsync("ClientOffline", new
+        //    {
+        //        HostName = session.MachineInfo.HostName,
+        //        ClientID = session.AppInfo.AppID,
+        //        IP = session.Ip,
+        //        LastSeen = DateTime.UtcNow
+        //    });
         await Clients.Group(DASHBOARD_GROUP)
-            .SendAsync("ClientOffline", new
-            {
-                ClientID = session.ClientID,
-                IP = session.Ip,
-                LastSeen = DateTime.UtcNow
-            });
+           .SendAsync("ClientOffline", session);
 
         await base.OnDisconnectedAsync(exception);
     }
@@ -104,6 +103,23 @@ public class UpgradeHub : Hub
         else
         {
             throw new Exception("token is null!");
+        }
+    }
+    private string GetAPPKey(HttpContext httpContext)
+    {
+        string? token = null;
+
+        var key = httpContext?.Request.Headers["appkey"].ToString();
+        if (!string.IsNullOrEmpty(key))
+        {
+
+            return key.Trim();
+        }
+
+
+        else
+        {
+            throw new Exception("key is null!");
         }
     }
 

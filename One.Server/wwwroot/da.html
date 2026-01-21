@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>设备监控中心</title>
@@ -23,11 +24,11 @@
             padding: 16px;
         }
 
-            .sidebar .logo {
-                font-size: 15px;
-                font-weight: 600;
-                margin-bottom: 20px;
-            }
+        .sidebar .logo {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
 
         .menu a {
             display: block;
@@ -38,10 +39,10 @@
             cursor: pointer;
         }
 
-            .menu a.active {
-                background: #19c2a2;
-                color: #fff;
-            }
+        .menu a.active {
+            background: #19c2a2;
+            color: #fff;
+        }
 
         .btn {
             display: inline-flex;
@@ -58,9 +59,9 @@
             color: #374151;
         }
 
-            .btn:hover {
-                background: #f9fafb;
-            }
+        .btn:hover {
+            background: #f9fafb;
+        }
 
         .btn-primary {
             background: #19c2a2;
@@ -68,13 +69,14 @@
             border-color: #19c2a2;
         }
 
-            .btn-primary:hover {
-                background: #16a085;
-            }
+        .btn-primary:hover {
+            background: #16a085;
+        }
 
         .btn:active {
             transform: translateY(1px);
         }
+
         /* ===== 右侧 ===== */
         .content {
             flex: 1;
@@ -89,14 +91,14 @@
             margin-bottom: 12px;
         }
 
-            .page-header h2 {
-                margin: 0;
-                font-size: 18px;
-            }
+        .page-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
 
-            .page-header button {
-                padding: 6px 12px;
-            }
+        .page-header button {
+            padding: 6px 12px;
+        }
 
         /* 分割线 */
         .divider {
@@ -110,9 +112,9 @@
             display: none;
         }
 
-            .page.active {
-                display: block;
-            }
+        .page.active {
+            display: block;
+        }
 
         /* 卡片 */
         .card {
@@ -125,7 +127,7 @@
         /* 概览统计 */
         .summary {
             display: grid;
-            grid-template-columns: repeat(4,1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
         }
 
@@ -147,7 +149,8 @@
             table-layout: fixed;
         }
 
-        th, td {
+        th,
+        td {
             padding: 10px 12px;
             border-bottom: 1px solid #eef2f7;
             font-size: 13px;
@@ -159,30 +162,42 @@
             background: #f8fafc;
         }
 
-            /* 设置各列宽度 */
-            th:nth-child(1), td:nth-child(1) {
-                width: 20%;
-            }
-            /* 设备名 */
-            th:nth-child(2), td:nth-child(2) {
-                width: 15%;
-            }
-            /* IP */
-            th:nth-child(3), td:nth-child(3) {
-                width: 20%;
-            }
-            /* 应用 */
-            th:nth-child(4), td:nth-child(4) {
-                width: 10%;
-            }
-            /* 版本 */
-            th:nth-child(5), td:nth-child(5) {
-                width: 10%;
-            }
-            /* 状态 */
-            th:nth-child(6), td:nth-child(6) {
-                width: 25%;
-            }
+        /* 设置各列宽度 */
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 20%;
+        }
+
+        /* 设备名 */
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 15%;
+        }
+
+        /* IP */
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 20%;
+        }
+
+        /* 应用 */
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 10%;
+        }
+
+        /* 版本 */
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 10%;
+        }
+
+        /* 状态 */
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 25%;
+        }
+
         /* 上线时间 */
 
         /* 状态标签 */
@@ -192,15 +207,15 @@
             font-size: 12px;
         }
 
-            .tag.online {
-                background: #e6fffa;
-                color: #059669;
-            }
+        .tag.online {
+            background: #e6fffa;
+            color: #059669;
+        }
 
-            .tag.warn {
-                background: #fff7ed;
-                color: #d97706;
-            }
+        .tag.warn {
+            background: #fff7ed;
+            color: #d97706;
+        }
 
         .history-item {
             display: flex;
@@ -209,9 +224,9 @@
             border-bottom: 1px solid #f3f4f6;
         }
 
-            .history-item:last-child {
-                border-bottom: none;
-            }
+        .history-item:last-child {
+            border-bottom: none;
+        }
 
         .history-icon {
             margin-right: 12px;
@@ -254,11 +269,11 @@
             min-width: 120px;
         }
 
-            .history-time div:first-child {
-                color: #374151;
-                font-weight: 500;
-                margin-bottom: 2px;
-            }
+        .history-time div:first-child {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 
@@ -322,7 +337,8 @@
                         <div class="history-item">
                             <div class="history-icon">✔</div>
                             <div class="history-content">
-                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span></div>
+                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span>
+                                </div>
                                 <div class="history-meta">设备成功连接到服务器</div>
 
                             </div>
@@ -330,10 +346,12 @@
                                 <div>4分钟前</div>
                                 <div>2026/1/19 12:09:06</div>
                             </div>
-                        </div><div class="history-item">
+                        </div>
+                        <div class="history-item">
                             <div class="history-icon">❌</div>
                             <div class="history-content">
-                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span></div>
+                                <div class="history-title">生产服务器-01 <span class="history-ip">(192.168.1.101)</span>
+                                </div>
                                 <div class="history-meta">设备成功连接到服务器</div>
 
                             </div>
@@ -345,7 +363,8 @@
                         <div class="history-item">
                             <div class="history-icon">⚠️</div>
                             <div class="history-content">
-                                <div class="history-title">缓存服务器-01 <span class="history-ip">(192.168.1.105)</span></div>
+                                <div class="history-title">缓存服务器-01 <span class="history-ip">(192.168.1.105)</span>
+                                </div>
                                 <div class="history-meta">CPU使用率超过85%警告</div>
 
                             </div>
@@ -382,20 +401,19 @@
         connection.on("ClientOnline", (client) => {
             const historyList = document.querySelector(".history-list");
             const now = new Date();
-            const localTime = new Date(client.lastSeen).toLocaleString();
-            const minutesAgo = Math.floor((now - new Date(client.lastSeen)) / (1000 * 60));
+            //const localTime = new Date(client.lastSeen).toLocaleString();
+            //const minutesAgo = Math.floor((now - new Date(client.lastSeen)) / (1000 * 60));
 
             const newItem = document.createElement("div");
             newItem.className = "history-item";
             newItem.innerHTML = `
                         <div class="history-icon">✔</div>
                         <div class="history-content">
-                            <div class="history-title">${client.clientID} <span class="history-ip">(${client.ip})</span></div>
-                            <div class="history-meta">设备成功连接到服务器</div>
+                            <div class="history-title">${client.machineInfo.hostName} - ${client.appInfo.appName} <span class="history-ip">(${client.ip})</span></div>
+                            <div class="history-meta">${client.appInfo.appID} 客户端成功连接到服务器</div>
                         </div>
                         <div class="history-time">
-                            <div>${minutesAgo}分钟前</div>
-                            <div>${localTime}</div>
+                            <div>${now}</div>
                         </div>
                     `;
 
@@ -408,20 +426,19 @@
         connection.on("ClientOffline", (client) => {
             const historyList = document.querySelector(".history-list");
             const now = new Date();
-            const localTime = new Date(client.lastSeen).toLocaleString();
-            const minutesAgo = Math.floor((now - new Date(client.lastSeen)) / (1000 * 60));
+            //const localTime = new Date(client.lastSeen).toLocaleString();
+            //const minutesAgo = Math.floor((now - new Date(client.)) / (1000 * 60));
 
             const newItem = document.createElement("div");
             newItem.className = "history-item";
             newItem.innerHTML = `
                     <div class="history-icon">✔</div>
                     <div class="history-content">
-                        <div class="history-title">${client.clientID} <span class="history-ip">(${client.ip})</span></div>
-                        <div class="history-meta">设备连接断开</div>
+                        <div class="history-title">${client.machineInfo.hostName} - ${client.appInfo.appName} <span class="history-ip">(${client.ip})</span></div>
+                        <div class="history-meta">${client.appInfo.appID} 客户端连接断开</div>
                     </div>
                     <div class="history-time">
-                        <div>${minutesAgo}分钟前</div>
-                        <div>${localTime}</div>
+                        <div>${now}</div>
                     </div>
                 `;
 
@@ -431,33 +448,25 @@
             }
         });
 
-        connection.start().then(() => {
-            console.log('SignalR 连接已启动');
-        }).catch(err => {
-            console.error('SignalR 连接失败:', err);
-        });
-
         // 启动SignalR连接
         async function startConnection() {
+            if (connection.state !== signalR.HubConnectionState.Disconnected) {
+                console.warn("SignalR 状态不是 Disconnected，跳过 start:", connection.state);
+                return;
+            }
+
             try {
                 console.log("Attempting to connect to SignalR Hub...");
                 await connection.start();
                 console.log("SignalR Connected successfully.");
-
-                // 更新连接状态指示
                 updateConnectionStatus(true);
-
             } catch (err) {
                 console.error("SignalR Connection Error:", err);
                 updateConnectionStatus(false);
-
-                // 显示错误通知
-                showErrorNotification("连接服务器失败，5秒后重试...");
-
-                // 5秒后重试
                 setTimeout(startConnection, 5000);
             }
         }
+
 
         // 更新连接状态UI
         function updateConnectionStatus(isConnected) {
@@ -494,7 +503,7 @@
 
 
         connection.onclose(async () => {
-            await startConnection();
+            console.warn("SignalR closed");
         });
 
         startConnection();
@@ -553,4 +562,5 @@
         load();
     </script>
 </body>
+
 </html>

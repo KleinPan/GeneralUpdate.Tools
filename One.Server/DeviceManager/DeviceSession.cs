@@ -1,18 +1,22 @@
-﻿namespace One.Server.DeviceManager;
+﻿using One.Server.DTOs;
+
+namespace One.Server.DeviceManager;
 
 public class DeviceSession
 {
-    public string ClientID { get; init; } = default!;
-    public string HostName { get; init; } = default!;
-    public string Ip { get; init; } = default!;
-    public string Token { get; set; } = default!;
+    public MachineInfo MachineInfo { get; set; } = new MachineInfo();
+    public AppInfo AppInfo { get; set; } = new AppInfo();
+    public InstanceInfo InstanceInfo { get; set; } = new InstanceInfo();
 
-    public string AppName { get; init; }
-    public string Version { get; init; } = default!;
+
+    public string Ip { get; set; } = default!;
+
+
+
 
     /// <summary>当前 SignalR 连接（可为空）</summary>
     public string? ConnectionId { get; set; }
 
     public string? Message { get; set; }
-    public DateTime OnlineTime { get; init; }
+
 }

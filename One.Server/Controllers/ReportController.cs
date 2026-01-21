@@ -21,16 +21,16 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost("heartbeat")]
-    public async Task<IActionResult> status([FromBody] ClientHeartbeatDTO dto)
+    public async Task<IActionResult> Heartbeat([FromBody] ClientHeartbeatDTO dto)
     {
+
         var session = new DeviceSession
         {
-            ClientID = dto.ClientID,
-            Token = dto.Token,
-            HostName = dto.HostName,
-            AppName = dto.AppName,
-            Version = dto.Version,
-            OnlineTime = dto.OnlineTime,
+            MachineInfo = dto.MachineInfo,
+            AppInfo = dto.AppInfo,
+            InstanceInfo = dto.InstanceInfo,
+            
+
             Ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
         };
 
