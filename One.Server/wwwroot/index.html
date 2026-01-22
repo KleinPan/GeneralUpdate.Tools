@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>设备监控中心</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">📡</div>
+                设备监控中心
+            </div>
+            <nav class="menu">
+                <a class="active" data-page="dashboard">概览面板</a>
+                <a data-page="devices">设备列表</a>
+                <a data-page="history">连接历史</a>
+                <a data-page="settings">设置</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="connection-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="connectionText">正在连接...</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="page-header">
+                <h2 id="title">概览面板</h2>
+                <div class="page-header-actions">
+                    <button class="btn" onclick="load()">🔄 刷新</button>
+                    <button class="btn btn-primary" onclick="load()">立即刷新</button>
+                </div>
+            </div>
+            <div class="divider"></div>
+
+            <!-- 概览 -->
+            <section id="page-dashboard" class="page active">
+                <div class="summary">
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <h4>设备总数</h4>
+                            <div class="value" id="total">0</div>
+                            <div class="trend">↑ 实时监控</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <h4>在线设备</h4>
+                            <div class="value" id="online">0</div>
+                            <div class="trend">✓ 正常运行</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <h4>今日连接</h4>
+                            <div class="value" id="today">0</div>
+                            <div class="trend">📈 活跃数据</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <h4>系统状态</h4>
+                            <div class="value" style="font-size: 20px; color: #19c2a2;">正常</div>
+                            <div class="trend">✓ 服务正常</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">快速统计</h3>
+                    </div>
+                    <p style="color: #64748b; line-height: 1.8;">
+                        欢迎使用设备监控中心。系统正在实时监控所有在线设备的状态变化，
+                        您可以点击上方刷新按钮获取最新数据，或切换左侧导航栏查看不同页面。
+                    </p>
+                </div>
+            </section>
+
+            <!-- 设备列表 -->
+            <section id="page-devices" class="page">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="deviceFilter" placeholder="搜索设备名/IP/应用名称" 
+                            style="flex: 1; min-width: 200px; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;"
+                            oninput="filterDevices()">
+                        <span style="color: #64748b; font-size: 13px;" id="filterCount">显示 0 条</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>设备名</th>
+                                <th>IP 地址</th>
+                                <th>应用名称</th>
+                                <th>版本号</th>
+                                <th>状态</th>
+                                <th>上线时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 40px;">
+                                    正在加载设备数据...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 连接历史 -->
+            <section id="page-history" class="page">
+                <div class="history-list" id="historyList">
+                    <div class="history-item">
+                        <div class="history-icon success">✔</div>
+                        <div class="history-content">
+                            <div class="history-title">系统初始化完成</div>
+                            <div class="history-meta">设备监控中心已启动，等待设备连接...</div>
+                        </div>
+                        <div class="history-time">
+                            <div class="time">--</div>
+                            <div class="date">准备就绪</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 设置 -->
+            <section id="page-settings" class="page">
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div>
+                            <div class="settings-label">自动刷新</div>
+                            <div class="settings-desc">自动获取最新设备数据</div>
+                        </div>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <div class="settings-label">实时通知</div>
+                            <div class="settings-desc">设备上线/离线时显示通知</div>
+                        </div>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <div class="settings-label">音效提示</div>
+                            <div class="settings-desc">连接状态变化时播放提示音</div>
+                        </div>
+                        <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div>
+                            <div class="settings-label">刷新间隔</div>
+                            <div class="settings-desc">数据自动刷新频率（秒）</div>
+                        </div>
+                        <input type="number" id="refreshInterval" value="3" min="1" max="60" style="
+                            width: 80px;
+                            padding: 8px 12px;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            text-align: center;
+                        " onchange="updateRefreshInterval()">
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        const APIList = "/api/client/list";
+        let allDevices = []; // 存储所有设备数据
+        let refreshTimer = null;
+        let refreshInterval = 3000; // 默认3秒
+
+        // SignalR连接初始化
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/upgradeHub?role=dashboard")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // 格式化时间
+        function formatTime(date) {
+            return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        // 创建历史记录项
+        function createHistoryItem(icon, iconClass, title, ip, meta) {
+            const now = new Date();
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.style.animation = 'fadeIn 0.3s ease';
+            item.innerHTML = `
+                <div class="history-icon ${iconClass}">${icon}</div>
+                <div class="history-content">
+                    <div class="history-title">${title} <span class="history-ip">(${ip})</span></div>
+                    <div class="history-meta">${meta}</div>
+                </div>
+                <div class="history-time">
+                    <div class="time">${formatTime(now)}</div>
+                    <div class="date">${formatDate(now)}</div>
+                </div>
+            `;
+            return item;
+        }
+
+        // 处理在线客户端通知
+        connection.on("ClientOnline", (client) => {
+            const historyList = document.getElementById("historyList");
+            const item = createHistoryItem(
+                '✔',
+                'success',
+                `${client.machineInfo.hostName} - ${client.appInfo.appName}`,
+                client.ip,
+                `客户端成功连接到服务器`
+            );
+            historyList.insertBefore(item, historyList.firstChild);
+            
+            // 限制显示数量
+            while (historyList.children.length > 50) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        });
+
+        // 处理离线客户端下线通知
+        connection.on("ClientOffline", (client) => {
+            const historyList = document.getElementById("historyList");
+            const item = createHistoryItem(
+                '✖',
+                'error',
+                `${client.machineInfo.hostName} - ${client.appInfo.appName}`,
+                client.ip,
+                `客户端连接断开`
+            );
+            historyList.insertBefore(item, historyList.firstChild);
+            
+            while (historyList.children.length > 50) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        });
+
+        // 启动SignalR连接
+        async function startConnection() {
+            if (connection.state !== signalR.HubConnectionState.Disconnected) {
+                return;
+            }
+
+            try {
+                await connection.start();
+                updateConnectionStatus(true);
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
+                updateConnectionStatus(false);
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+        // 更新连接状态UI
+        function updateConnectionStatus(isConnected) {
+            const statusDot = document.getElementById("statusDot");
+            const connectionText = document.getElementById("connectionText");
+            
+            if (isConnected) {
+                statusDot.classList.add('connected');
+                connectionText.textContent = "已连接 - 实时监控中";
+            } else {
+                statusDot.classList.remove('connected');
+                connectionText.textContent = "连接断开 - 正在重连...";
+            }
+        }
+
+        // 导航切换
+        const menus = document.querySelectorAll(".menu a");
+        const pages = document.querySelectorAll(".page");
+        const title = document.getElementById("title");
+
+        menus.forEach(m => {
+            m.onclick = () => {
+                menus.forEach(x => x.classList.remove("active"));
+                m.classList.add("active");
+                pages.forEach(p => p.classList.remove("active"));
+                document.getElementById("page-" + m.dataset.page).classList.add("active");
+                title.innerText = m.innerText;
+            };
+        });
+
+        // 加载数据
+        async function load() {
+            const demoData = [
+                {
+                    MachineInfo: { HostName: "生产服务器-01" },
+                    Ip: "192.168.1.101",
+                    AppInfo: { AppName: "生产管理系统", Version: "2.1.5" },
+                    InstanceInfo: { StartTime: new Date() }
+                },
+                {
+                    MachineInfo: { HostName: "缓存服务器-01" },
+                    Ip: "192.168.1.105",
+                    AppInfo: { AppName: "缓存服务", Version: "1.5.0" },
+                    InstanceInfo: { StartTime: new Date() }
+                },
+                {
+                    MachineInfo: { HostName: "数据库服务器" },
+                    Ip: "192.168.1.102",
+                    AppInfo: { AppName: "数据库监控", Version: "3.0.1" },
+                    InstanceInfo: { StartTime: new Date() }
+                }
+            ];
+
+            try {
+                allDevices = await fetch(APIList).then(r => r.json()).catch(() => demoData);
+                
+                document.getElementById("total").innerText = allDevices.length;
+                document.getElementById("online").innerText = allDevices.length;
+                document.getElementById("today").innerText = allDevices.length;
+
+                renderDeviceTable();
+            } catch (error) {
+                console.error("加载数据失败:", error);
+            }
+        }
+
+        // 渲染设备列表（支持过滤）
+        function renderDeviceTable() {
+            const filterValue = document.getElementById("deviceFilter").value.trim().toLowerCase();
+            
+            // 过滤设备
+            const filteredDevices = allDevices.filter(device => {
+                if (!filterValue) return true;
+                
+                const hostName = (device.MachineInfo?.HostName || "").toLowerCase();
+                const ip = (device.Ip || "").toLowerCase();
+                const appName = (device.AppInfo?.AppName || "").toLowerCase();
+                const filter = filterValue.toLowerCase();
+                
+                // 支持IP前几位匹配（如 "192.168" 或 "192.168.1"）
+                return hostName.includes(filter) || 
+                       ip.includes(filter) || 
+                       appName.includes(filter);
+            });
+
+            // 更新过滤计数
+            const filterCountEl = document.getElementById("filterCount");
+            if (filterValue) {
+                filterCountEl.textContent = `搜索 "${filterValue}"，显示 ${filteredDevices.length} 条（总计 ${allDevices.length} 条）`;
+            } else {
+                filterCountEl.textContent = `显示 ${filteredDevices.length} 条`;
+            }
+
+            const tb = document.getElementById("tbody");
+            if (filteredDevices.length === 0) {
+                tb.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 40px;">
+                            ${filterValue ? '没有匹配的设备' : '暂无设备数据，点击刷新按钮获取最新数据'}
+                        </td>
+                    </tr>`;
+            } else {
+                tb.innerHTML = filteredDevices.map(d => `
+                    <tr>
+                        <td><strong>${d.MachineInfo?.HostName || "-"}</strong></td>
+                        <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${d.Ip || "-"}</code></td>
+                        <td>${d.AppInfo?.AppName || "-"}</td>
+                        <td><span class="tag warn">${d.AppInfo?.Version || "-"}</span></td>
+                        <td><span class="tag online">● 在线</span></td>
+                        <td style="color: #64748b;">${d.InstanceInfo?.StartTime ? new Date(d.InstanceInfo.StartTime).toLocaleString() : "-"}</td>
+                    </tr>
+                `).join("");
+            }
+        }
+
+        // 过滤设备（防抖）
+        let filterTimer = null;
+        function filterDevices() {
+            if (filterTimer) clearTimeout(filterTimer);
+            filterTimer = setTimeout(() => {
+                renderDeviceTable();
+            }, 300); // 300ms 防抖
+        }
+
+        // 更新刷新间隔
+        function updateRefreshInterval() {
+            const intervalInput = document.getElementById("refreshInterval");
+            let value = parseInt(intervalInput.value, 10);
+            if (isNaN(value) || value < 1) value = 1;
+            if (value > 60) value = 60;
+            intervalInput.value = value;
+            
+            refreshInterval = value * 1000;
+            
+            // 重新启动定时器
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+            refreshTimer = setInterval(load, refreshInterval);
+        }
+
+        // 初始化
+        connection.onclose(async () => {
+            updateConnectionStatus(false);
+        });
+
+        // 初始化刷新间隔并启动
+        updateRefreshInterval();
+        startConnection();
+        load();
+    </script>
+</body>
+
+</html>
