@@ -1,55 +1,63 @@
-﻿namespace One.Server.Hubs;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 using One.Server.DeviceManager;
 
 using System;
 
+namespace One.Server.Hubs;
+
 public class UpgradeHub : Hub
 {
-    private const string DASHBOARD_GROUP = "Dashboard";
-    private const string DEVICE_GROUP = "Devices";
+    private const string DashboardGroup = "Dashboard";
+    private const string DeviceGroup = "Devices";
 
     private readonly ClientStateManager _deviceService;
+    private readonly ILogger<UpgradeHub> _logger;
 
-    public UpgradeHub(ClientStateManager deviceService)
+    public UpgradeHub(ClientStateManager deviceService, ILogger<UpgradeHub> logger)
     {
         _deviceService = deviceService;
+        _logger = logger;
     }
 
     public override async Task OnConnectedAsync()
     {
-        var httpContext = Context.GetHttpContext()!;
+        var httpContext = Context.GetHttpContext() ?? throw new InvalidOperationException("HttpContext is null");
         var role = httpContext.Request.Query["role"].ToString();
-
         var connectionId = Context.ConnectionId;
 
-        //Console.WriteLine($"OnConnectedAsync ConnectionId : {connectionId}");
+        _logger.LogInformation("Client connected: {ConnectionId}, role: {Role}", connectionId, role);
+
         await Clients.Caller.SendAsync("ReceiveMessage", "Hub is here!");
 
-        if (role == "dashboard")
+        if (role.Equals("dashboard", StringComparison.OrdinalIgnoreCase))
         {
-            await Groups.AddToGroupAsync(connectionId, DASHBOARD_GROUP);
+            await Groups.AddToGroupAsync(connectionId, DashboardGroup);
+            _logger.LogDebug("Client {ConnectionId} added to Dashboard group", connectionId);
         }
         else
         {
-            await Groups.AddToGroupAsync(connectionId, DEVICE_GROUP);
+            await Groups.AddToGroupAsync(connectionId, DeviceGroup);
 
-            var token = GetToken(httpContext);//每次打开生成
-            var appID = GetAPPKey(httpContext);//APPID
-            //Context.Items["token"] = token;
-            var session = _deviceService.BindConnectionByToken(token, connectionId);
+            var appKey = GetAppKey(httpContext);
+            var session = _deviceService.BindConnectionByID(appKey, connectionId);
 
- 
+            if (session != null)
+            {
+                await Clients.Caller.SendAsync("Online", $"Hub => <{appKey}> is now online.");
 
-            await Clients.Caller.SendAsync("Online", $"Hub => <{appID}> is now online.");
+                // 只广播给 Dashboard
+                await Clients.Group(DashboardGroup)
+                    .SendAsync("ClientOnline", session);
 
-            // 🔔 只广播给 Dashboard
-            await Clients.Group(DASHBOARD_GROUP)
-                .SendAsync("ClientOnline", session);
-                
+                _logger.LogInformation("Device {AppKey} is now online", appKey);
+            }
+            else
+            {
+                _logger.LogWarning("Device {AppKey} not found when binding connection", appKey);
+            }
         }
 
         await base.OnConnectedAsync();
@@ -57,73 +65,68 @@ public class UpgradeHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _deviceService.RemoveByConnectionId(Context.ConnectionId, out DeviceSession session);
+        var session = _deviceService.RemoveByConnectionId(Context.ConnectionId, out var removedSession);
 
-
-        //Console.WriteLine($"OnDisconnectedAsync ConnectionId : {Context.ConnectionId}");
-
-        //var session = SetOffineLine(  connectionId);
-        //// 🔔 只广播给 Dashboard
-
-        if (session == null)
+        if (exception != null)
         {
-            return;
+            _logger.LogWarning(exception, "Client {ConnectionId} disconnected with error", Context.ConnectionId);
         }
-        //await Clients.Group(DASHBOARD_GROUP)
-        //    .SendAsync("ClientOffline", new
-        //    {
-        //        HostName = session.MachineInfo.HostName,
-        //        ClientID = session.AppInfo.AppID,
-        //        IP = session.Ip,
-        //        LastSeen = DateTime.UtcNow
-        //    });
-        await Clients.Group(DASHBOARD_GROUP)
-           .SendAsync("ClientOffline", session);
+        else
+        {
+            _logger.LogInformation("Client {ConnectionId} disconnected", Context.ConnectionId);
+        }
+
+        if (removedSession != null)
+        {
+            // 只广播给 Dashboard
+            await Clients.Group(DashboardGroup)
+                .SendAsync("ClientOffline", removedSession);
+
+            _logger.LogDebug("Device {AppId} is now offline", removedSession.AppInfo.AppID);
+        }
 
         await base.OnDisconnectedAsync(exception);
     }
 
-    #region Helper
+    #region Helper Methods
 
+    /// <summary>从请求头获取 Bearer Token</summary>
     private string GetToken(HttpContext httpContext)
     {
-        string? token = null;
+        var authHeader = httpContext.Request.Headers["Authorization"].ToString();
 
-        var authHeader = httpContext?.Request.Headers["Authorization"].ToString();
-        if (!string.IsNullOrEmpty(authHeader) &&
-            authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(authHeader))
         {
-            token = authHeader.Substring("Bearer ".Length).Trim();
+            throw new ArgumentException("Authorization header is missing");
         }
 
-        if (!string.IsNullOrEmpty(token))
+        if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            return token;
+            throw new ArgumentException("Invalid Authorization header format");
         }
-        else
+
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+
+        if (string.IsNullOrEmpty(token))
         {
-            throw new Exception("token is null!");
+            throw new ArgumentException("Token is empty");
         }
+
+        return token;
     }
-    private string GetAPPKey(HttpContext httpContext)
+
+    /// <summary>从请求头获取 AppKey</summary>
+    private string GetAppKey(HttpContext httpContext)
     {
-        string? token = null;
+        var key = httpContext.Request.Headers["appkey"].ToString();
 
-        var key = httpContext?.Request.Headers["appkey"].ToString();
-        if (!string.IsNullOrEmpty(key))
+        if (string.IsNullOrWhiteSpace(key))
         {
-
-            return key.Trim();
+            throw new ArgumentException("AppKey header is missing");
         }
 
-
-        else
-        {
-            throw new Exception("key is null!");
-        }
+        return key.Trim();
     }
 
-
-
-    #endregion Helper
+    #endregion
 }

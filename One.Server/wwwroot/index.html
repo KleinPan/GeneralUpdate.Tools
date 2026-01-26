@@ -226,8 +226,8 @@
             const item = createHistoryItem(
                 '✔',
                 'success',
-                `${client.machineInfo.hostName} - ${client.appInfo.appName}`,
-                client.ip,
+                `${client.MachineInfo?.HostName} - ${client.AppInfo?.AppName}`,
+                client.MachineInfo?.IP,
                 `客户端成功连接到服务器`
             );
             historyList.insertBefore(item, historyList.firstChild);
@@ -244,8 +244,8 @@
             const item = createHistoryItem(
                 '✖',
                 'error',
-                `${client.machineInfo.hostName} - ${client.appInfo.appName}`,
-                client.ip,
+                `${client.MachineInfo?.HostName} - ${client.AppInfo?.AppName}`,
+                client.MachineInfo?.IP,
                 `客户端连接断开`
             );
             historyList.insertBefore(item, historyList.firstChild);
@@ -302,29 +302,8 @@
 
         // 加载数据
         async function load() {
-            const demoData = [
-                {
-                    MachineInfo: { HostName: "生产服务器-01" },
-                    Ip: "192.168.1.101",
-                    AppInfo: { AppName: "生产管理系统", Version: "2.1.5" },
-                    InstanceInfo: { StartTime: new Date() }
-                },
-                {
-                    MachineInfo: { HostName: "缓存服务器-01" },
-                    Ip: "192.168.1.105",
-                    AppInfo: { AppName: "缓存服务", Version: "1.5.0" },
-                    InstanceInfo: { StartTime: new Date() }
-                },
-                {
-                    MachineInfo: { HostName: "数据库服务器" },
-                    Ip: "192.168.1.102",
-                    AppInfo: { AppName: "数据库监控", Version: "3.0.1" },
-                    InstanceInfo: { StartTime: new Date() }
-                }
-            ];
-
             try {
-                allDevices = await fetch(APIList).then(r => r.json()).catch(() => demoData);
+                allDevices = await fetch(APIList).then(r => r.json());
                 
                 document.getElementById("total").innerText = allDevices.length;
                 document.getElementById("online").innerText = allDevices.length;
@@ -345,7 +324,7 @@
                 if (!filterValue) return true;
                 
                 const hostName = (device.MachineInfo?.HostName || "").toLowerCase();
-                const ip = (device.Ip || "").toLowerCase();
+                const ip = (device.MachineInfo?.IP || "").toLowerCase();
                 const appName = (device.AppInfo?.AppName || "").toLowerCase();
                 const filter = filterValue.toLowerCase();
                 
@@ -375,7 +354,7 @@
                 tb.innerHTML = filteredDevices.map(d => `
                     <tr>
                         <td><strong>${d.MachineInfo?.HostName || "-"}</strong></td>
-                        <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${d.Ip || "-"}</code></td>
+                        <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${d.MachineInfo?.IP || "-"}</code></td>
                         <td>${d.AppInfo?.AppName || "-"}</td>
                         <td><span class="tag warn">${d.AppInfo?.Version || "-"}</span></td>
                         <td><span class="tag online">● 在线</span></td>

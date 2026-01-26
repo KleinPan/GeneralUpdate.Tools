@@ -4,19 +4,17 @@ namespace One.Server.DeviceManager;
 
 public class DeviceSession
 {
-    public MachineInfo MachineInfo { get; set; } = new MachineInfo();
-    public AppInfo AppInfo { get; set; } = new AppInfo();
-    public InstanceInfo InstanceInfo { get; set; } = new InstanceInfo();
+    public int Status { get; set; } // Online / Busy / Error
+    public DateTime CurrentTime { get; set; }
 
+    public MachineInfoM MachineInfo { get; set; } = new();
+    public AppInfoM AppInfo { get; set; } = new();
+    public InstanceInfoM InstanceInfo { get; set; } = new();
 
-    public string Ip { get; set; } = default!;
-
-
-
+    public RuntimeInfo RuntimeInfo { get; set; } = new();
 
     /// <summary>当前 SignalR 连接（可为空）</summary>
     public string? ConnectionId { get; set; }
 
     public string? Message { get; set; }
-
 }

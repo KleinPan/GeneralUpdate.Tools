@@ -7,17 +7,23 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        //https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/minimal-apis/webapplication?view=aspnetcore-10.0
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
         builder.Services.AddSingleton<ClientStateManager>();
+        builder.Services.AddMemoryCache();
         builder.Services.AddControllers();
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        // Ìí¼Ó SignalR ·þÎñ
-        builder.Services.AddSignalR();
+
+        // å¯ç”¨ SignalR æœåŠ¡
+        builder.Services.AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+                options.PayloadSerializerOptions.DictionaryKeyPolicy = null;
+            });
 
         var app = builder.Build();
 
@@ -37,7 +43,6 @@ public class Program
 
         app.MapHub<UpgradeHub>("/UpgradeHub");
 
-        
         app.Run();
     }
 }
