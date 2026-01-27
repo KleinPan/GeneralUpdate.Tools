@@ -17,7 +17,7 @@ public class ClientStateManager
     /// <param name="appId">应用标识</param>
     /// <param name="status">状态</param>
     /// <param name="currentTime">启动时间</param>
-    public void Heartbeat(string appId, int status, DateTime currentTime,string ip)
+    public void Heartbeat(string appId, int status, DateTime currentTime, string ip)
     {
         _devices.AddOrUpdate(
             appId,

@@ -1,4 +1,5 @@
 using One.Server.DeviceManager;
+using One.Server.Extensions;
 using One.Server.Hubs;
 
 namespace One.Server;
@@ -39,10 +40,16 @@ public class Program
         app.UseAuthorization();
 
         app.UseStaticFiles();
+
+        app.Logger.LogInformationWithTime("Adding Routes");
+
         app.MapControllers();
+
+        app.Logger.LogInformationWithTime("MapHubs");
 
         app.MapHub<UpgradeHub>("/UpgradeHub");
 
+        app.Logger.LogInformationWithTime("Starting the app");
         app.Run();
     }
 }

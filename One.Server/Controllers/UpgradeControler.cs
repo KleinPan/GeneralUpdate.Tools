@@ -1,11 +1,12 @@
 using GeneralUpdate.Common.Models;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 using One.Server.DeviceManager;
 using One.Server.DTOs;
+using One.Server.Extensions;
 using One.Server.Hubs;
 
 using System.Globalization;
@@ -13,18 +14,14 @@ using System.Text.Json;
 
 namespace One.Server.Controllers;
 
-/// <summary>
-/// 应用类型常量
-/// </summary>
+/// <summary>应用类型常量</summary>
 public static class AppTypeConstants
 {
     public const int ClientApp = 1;
     public const int UpdateApp = 2;
 }
 
-/// <summary>
-/// 平台类型常量
-/// </summary>
+/// <summary>平台类型常量</summary>
 public static class PlatformConstants
 {
     public const int Windows = 1;
@@ -68,7 +65,7 @@ public class UpgradeController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Verification request from {AppKey}, AppType: {AppType}",
+            _logger.LogInformationWithTime("Verification request from {AppKey}, AppType: {AppType}",
                 dto.AppKey, dto.AppType);
 
             var req = HttpContext.Request;
@@ -131,7 +128,7 @@ public class UpgradeController : ControllerBase
         var cachedData = _memoryCache.Get(cacheKey);
         if (cachedData is List<VersionInfoM> cachedVersionList)
         {
-            _logger.LogDebug("Using cached version info ({Count} items)", cachedVersionList.Count);
+            _logger.LogDebugWithTime("Using cached version info ({Count} items)", cachedVersionList.Count);
             return cachedVersionList;
         }
 
@@ -154,7 +151,7 @@ public class UpgradeController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to parse version file: {File}", item);
+                _logger.LogErrorWithTime(ex, "Failed to parse version file: {File}", item);
             }
         }
 
@@ -165,11 +162,11 @@ public class UpgradeController : ControllerBase
 
         _memoryCache.Set(cacheKey, resultList, cacheEntryOptions);
 
-        _logger.LogInformation("Loaded {Count} version files from {Path}",
+        _logger.LogInformationWithTime("Loaded {Count} version files from {Path}",
             resultList.Count, fileDir);
 
         return resultList;
     }
 
-    #endregion
+    #endregion Private Methods
 }

@@ -315,7 +315,7 @@
             }
         }
 
-        // 渲染设备列表（支持过滤）
+            // 渲染设备列表（支持过滤）
         function renderDeviceTable() {
             const filterValue = document.getElementById("deviceFilter").value.trim().toLowerCase();
             
@@ -355,13 +355,184 @@
                     <tr>
                         <td><strong>${d.MachineInfo?.HostName || "-"}</strong></td>
                         <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${d.MachineInfo?.IP || "-"}</code></td>
-                        <td>${d.AppInfo?.AppName || "-"}</td>
+                        <td>
+                            <span class="app-name-clickable" 
+                                  data-app-id="${d.AppInfo?.AppID || ''}"
+                                  data-app-name="${d.AppInfo?.AppName || ''}"
+                                  data-app-version="${d.AppInfo?.Version || ''}">
+                                ${d.AppInfo?.AppName || "-"}
+                            </span>
+                        </td>
                         <td><span class="tag warn">${d.AppInfo?.Version || "-"}</span></td>
                         <td><span class="tag online">● 在线</span></td>
                         <td style="color: #64748b;">${d.InstanceInfo?.StartTime ? new Date(d.InstanceInfo.StartTime).toLocaleString() : "-"}</td>
                     </tr>
                 `).join("");
             }
+        }
+
+        // 事件委托：处理应用名称点击
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.app-name-clickable');
+            if (target) {
+                e.preventDefault();
+                e.stopPropagation();
+                showAppTips(target);
+            }
+        });
+
+        // 显示应用信息Tips弹窗
+        async function showAppTips(element) {
+            const appId = element.dataset.appId;
+            const appName = element.dataset.appName;
+            const appVersion = element.dataset.appVersion;
+            
+            console.log('点击应用:', { appId, appName, appVersion });
+            
+            // 调试：检查 appId 是否存在
+            if (!appId) {
+                console.error('AppID 为空！数据可能有问题');
+                alert('该设备没有 AppID 信息');
+                return;
+            }
+            
+            // 获取元素位置
+            const rect = element.getBoundingClientRect();
+            const tooltip = document.createElement('div');
+            tooltip.className = 'app-tips-tooltip';
+            tooltip.id = 'app-tips-' + Date.now(); // 唯一ID，用于事件判断
+            tooltip.innerHTML = `
+                <div class="tips-header">
+                    <span class="tips-title">${appName}</span>
+                    <span class="tips-close" onclick="closeAppTips()">×</span>
+                </div>
+                <div class="tips-content">
+                    <div class="tips-loading">加载中...</div>
+                </div>
+                <div class="tips-arrow"></div>
+            `;
+            
+            document.body.appendChild(tooltip);
+            console.log('弹窗已创建，ID:', tooltip.id);
+            
+            // 定位弹窗
+            positionTooltip(tooltip, rect);
+            
+            // 调用客户端方法获取详细信息
+            try {
+                const clientInfo = await getClientAppInfo(appId);
+                updateTipsContent(tooltip, clientInfo, appName, appVersion);
+            } catch (error) {
+                console.error('获取信息失败:', error);
+                tooltip.querySelector('.tips-content').innerHTML = `
+                    <div class="tips-error">
+                        <span class="error-icon">⚠️</span>
+                        <p>获取信息失败</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // 定位Tips弹窗
+        function positionTooltip(tooltip, sourceRect) {
+            const tooltipWidth = 280;
+            const tooltipHeight = 200; // 预估高度
+            const margin = 12;
+            
+            let left = sourceRect.right + margin;
+            let top = sourceRect.top;
+            
+            // 右侧空间不足时，显示在左侧
+            if (left + tooltipWidth > window.innerWidth) {
+                left = sourceRect.left - tooltipWidth - margin;
+                tooltip.querySelector('.tips-arrow').classList.add('arrow-right');
+            } else {
+                tooltip.querySelector('.tips-arrow').classList.add('arrow-left');
+            }
+            
+            // 顶部空间不足时，调整位置
+            if (top + tooltipHeight > window.innerHeight) {
+                top = window.innerHeight - tooltipHeight - margin;
+            }
+            
+            tooltip.style.cssText = `
+                position: fixed;
+                left: ${left}px;
+                top: ${top}px;
+                width: ${tooltipWidth}px;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: tipsFadeIn 0.2s ease;
+                overflow: hidden;
+            `;
+        }
+
+        // 更新Tips内容
+        function updateTipsContent(tooltip, clientInfo, appName, appVersion) {
+            const content = tooltip.querySelector('.tips-content');
+
+            // 动态生成所有 key-value 行
+            let rowsHtml = '';
+            if (clientInfo && typeof clientInfo === 'object') {
+                for (const [key, value] of Object.entries(clientInfo)) {
+                    rowsHtml += `
+                        <div class="info-row">
+                            <span class="info-label">${key}</span>
+                            <span class="info-value">${value ?? '未知'}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!rowsHtml) {
+                rowsHtml = '<div class="tips-error"><span class="error-icon">⚠️</span><p>暂无数据</p></div>';
+            }
+
+            content.innerHTML = `
+                <div class="tips-info">
+                    ${rowsHtml}
+                </div>
+            `;
+        }
+
+        // 关闭Tips弹窗
+        function closeAppTips() {
+            const tooltip = document.querySelector('.app-tips-tooltip');
+            if (tooltip) {
+                tooltip.style.animation = 'tipsFadeOut 0.2s ease';
+                setTimeout(() => tooltip.remove(), 200);
+            }
+        }
+
+        // 调用客户端方法获取应用信息
+        async function getClientAppInfo(appId) {
+            return new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    reject(new Error('请求超时'));
+                }, 3000);
+
+                // 设置一次性监听器接收结果
+                // 注意：后端 SendAsync 只传了一个参数(Dictionary)，所以这里只接收一个对象参数
+                const handler = (result) => {
+                    console.log('收到 ClientAppInfoResult:', result);
+                    clearTimeout(timeout);
+                    connection.off("ClientAppInfoResult", handler);
+                    resolve(result);
+                };
+
+                connection.on("ClientAppInfoResult", handler);
+
+                // 发送请求（传递 AppID 而不是 IP）
+                connection.invoke("RequestClientAppInfo", appId)
+                    .catch(err => {
+                        clearTimeout(timeout);
+                        connection.off("ClientAppInfoResult", handler);
+                        reject(err);
+                    });
+            });
         }
 
         // 过滤设备（防抖）

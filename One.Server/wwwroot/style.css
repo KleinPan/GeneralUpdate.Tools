@@ -556,3 +556,215 @@ body {
         align-items: flex-start;
     }
 }
+
+/* ===== 应用名称点击样式 ===== */
+.app-name-clickable {
+    cursor: pointer;
+    color: #19c2a2;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    /* 下划线样式 - 使用 border-bottom */
+    border-bottom: 1px solid #19c2a2;
+}
+
+.app-name-clickable:hover {
+    color: #10b981;
+    border-bottom-color: #10b981;
+    border-bottom-width: 2px;
+}
+
+.app-name-clickable:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+/* 可点击元素的通用样式（带下划线虚线） */
+.clickable-underline {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border-bottom: 1px dashed #19c2a2;
+}
+
+.clickable-underline:hover {
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+}
+
+.app-name-clickable:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+/* 可点击元素的通用样式（带下划线虚线） */
+.clickable-underline {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+}
+
+.clickable-underline:hover {
+    border-bottom-color: currentColor;
+    text-decoration: none;
+}
+
+/* ===== Tips弹窗动画 ===== */
+@keyframes tipsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes tipsFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+}
+
+/* ===== 应用信息Tips弹窗样式 ===== */
+.app-tips-tooltip {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    overflow: hidden;
+}
+
+.tips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #19c2a2 0%, #10b981 100%);
+    color: #fff;
+}
+
+.tips-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.tips-close {
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.tips-close:hover {
+    opacity: 1;
+}
+
+.tips-content {
+    padding: 16px;
+    min-height: 120px;
+}
+
+.tips-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: #64748b;
+}
+
+.tips-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #19c2a2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.tips-error {
+    text-align: center;
+    padding: 20px;
+}
+
+.error-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.tips-error p {
+    color: #dc2626;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.tips-error small {
+    color: #64748b;
+}
+
+.tips-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.info-row:hover {
+    background: #f1f5f9;
+}
+
+.info-label {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.tips-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    top: 16px;
+}
+
+.tips-arrow.arrow-left {
+    left: -16px;
+    border-right-color: #fff;
+}
+
+.tips-arrow.arrow-right {
+    right: -16px;
+    border-left-color: #fff;
+}
